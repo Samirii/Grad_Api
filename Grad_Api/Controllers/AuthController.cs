@@ -96,7 +96,7 @@ namespace Grad_Api.Controllers
                 {
 
                     var user = await userManager.FindByEmailAsync(userDto.Email);
-                    var PasswordValid = await userManager.CheckPasswordAsync(user, userDto.Password);
+                var PasswordValid = await userManager.CheckPasswordAsync(user, userDto.Password);
                     if (user == null || PasswordValid == false)
                     {
                         return Unauthorized(userDto);
