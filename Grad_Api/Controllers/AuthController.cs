@@ -16,6 +16,7 @@ namespace Grad_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+   
     public class AuthController : ControllerBase
     {
         private readonly ILogger logger;
@@ -89,6 +90,7 @@ namespace Grad_Api.Controllers
             }
             [HttpPost]
             [Route("login")]
+            
             public async Task<ActionResult<AuthResponse>> Login(LoginUserDto userDto)
             {
                 logger.LogInformation($"Registration Attempt for {userDto.Email}");
