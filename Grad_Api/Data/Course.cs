@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Grad_Api.Data;
@@ -13,12 +13,10 @@ public partial class Course
 
     public string? ThumbnailUrl { get; set; }
 
+    public string? TeacherName { get; set; }
+
     public int? CategoryId { get; set; }
     public CourseCategory Category { get; set; }
-
-
-    public int? InstructorId { get; set; }
-
 
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 

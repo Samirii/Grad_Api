@@ -24,16 +24,16 @@ namespace Grad_Api.Controllers
         private readonly UserManager<ApiUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration configuration;
+        private readonly GradProjDbContext context;
 
-
-
-        public AuthController(ILogger<AuthController> logger, IMapper mapper, UserManager<ApiUser> userManager, RoleManager<IdentityRole> roleManager,IConfiguration configuration)
+        public AuthController(ILogger<AuthController> logger, IMapper mapper, UserManager<ApiUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, GradProjDbContext context)
         {
             this.logger = logger;
             this.mapper = mapper;
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.configuration = configuration;
+            this.context = context;
         }
         [HttpPost]
         [Route("register")]
@@ -47,11 +47,31 @@ namespace Grad_Api.Controllers
                 {
                     return BadRequest("Role must be either 'Teacher' or 'Student'");
                 }
+
+                // Validate Subject based on role
+                if (userDto.Role == "teacher")
+                {
+                    if (!userDto.SubjectId.HasValue)
+                    {
+                        return BadRequest("Subject selection is required for teachers");
+                    }
+                    
+                    // Subject IDs should be between 1 and 3 (Math, Science, English)
+                    if (userDto.SubjectId < 1 || userDto.SubjectId > 3)
+                    {
+                        return BadRequest("Invalid subject selected. Subject must be 1 (Math), 2 (Science), or 3 (English)");
+                    }
+                }
+                else if (userDto.SubjectId.HasValue)
+                {
+                    return BadRequest("Only teachers can select a subject");
+                }
+
                 var user = mapper.Map<ApiUser>(userDto);
                 user.UserName = userDto.Email;
-               
-                var result = await userManager.CreateAsync(user, userDto.Password);
+                user.SubjectId = userDto.SubjectId;
 
+                var result = await userManager.CreateAsync(user, userDto.Password);
 
                 if (!result.Succeeded)
                 {
@@ -67,14 +87,25 @@ namespace Grad_Api.Controllers
                     return BadRequest($"Role '{userDto.Role}' does not exist.");
                 }
 
-
                 await userManager.AddToRoleAsync(user, char.ToUpper(userDto.Role[0]) + userDto.Role.Substring(1));
-             
+
+                // Get subject name for response
+                string subjectName = null;
+                if (user.SubjectId.HasValue)
+                {
+                    var subject = await context.Subjects.FindAsync(user.SubjectId.Value);
+                    subjectName = subject?.Name;
+                }
+
                 return Accepted(new
                 {
                     UserId = user.Id,
                     Email = user.Email,
                     Role = userDto.Role,
+                    SubjectId = user.SubjectId,
+                    SubjectName = subjectName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName
                 });
             }
             catch (Exception ex)
@@ -86,7 +117,10 @@ namespace Grad_Api.Controllers
                   statusCode: 500);
             }
 
-            }
+        }
+           
+
+            
             [HttpPost]
             [Route("login")]
             public async Task<ActionResult<AuthResponse>> Login(LoginUserDto userDto)
@@ -154,7 +188,13 @@ namespace Grad_Api.Controllers
 
             }
 
+            private async Task<string> GetSubjectName(int? subjectId)
+            {
+                if (!subjectId.HasValue)
+                    return null;
 
+                var subject = await context.Subjects.FindAsync(subjectId.Value);
+                return subject?.Name;
+            }
     }
     }
-

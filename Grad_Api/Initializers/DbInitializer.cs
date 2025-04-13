@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Grad_Api.Data; // Where your ApiUser is defined
 using Microsoft.Extensions.Logging;
@@ -26,6 +25,8 @@ namespace Grad_Api.Initializers
                 await SeedRoles(roleManager, logger);
                 await SeedUsers(userManager, logger);
                 await SeedUserRoles(context, logger);
+                await SeedCourseCategories(context, logger);
+                await SeedSubjects(context, logger);
             }
             catch (Exception ex)
             {
@@ -188,9 +189,39 @@ namespace Grad_Api.Initializers
                 logger.LogInformation("Assigned Student role to Student user");
             }
         }
+
+        private static async Task SeedCourseCategories(GradProjDbContext context, ILogger logger)
+        {
+            if (!context.CourseCategories.Any())
+            {
+                var categories = new List<CourseCategory>
+                {
+                    new CourseCategory { Id = 1, Name = "prep1" },
+                    new CourseCategory { Id = 2, Name = "prep2" },
+                    new CourseCategory { Id = 3, Name = "prep3" }
+                };
+
+                await context.CourseCategories.AddRangeAsync(categories);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Created course categories");
+            }
+        }
+
+        private static async Task SeedSubjects(GradProjDbContext context, ILogger logger)
+        {
+            if (!context.Subjects.Any())
+            {
+                var subjects = new List<Subject>
+                {
+                    new Subject { Name = "Math" },
+                    new Subject { Name = "Science" },
+                    new Subject { Name = "English" }
+                };
+
+                await context.Subjects.AddRangeAsync(subjects);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Created subjects");
+            }
+        }
     }
 }
-
-
-    
-

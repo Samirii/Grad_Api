@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -27,6 +27,8 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
     public virtual DbSet<Quiz> Quizzes { get; set; }
 
+    public virtual DbSet<Subject> Subjects { get; set; }
+
    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,22 +36,12 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
         modelBuilder.Entity<Course>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Course__3214EC073AE4FFCA");
-
             entity.ToTable("Course");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CategoryId).HasColumnName("CategoryId ");
-            entity.Property(e => e.Description)
-                .HasMaxLength(250)
-                .HasColumnName("Description ");
-            entity.Property(e => e.InstructorId).HasColumnName("InstructorId ");
-            entity.Property(e => e.ThumbnailUrl)
-                .HasMaxLength(50)
-                .HasColumnName("ThumbnailUrl ");
-            entity.Property(e => e.Title)
-                .HasMaxLength(50)
-                .HasColumnName("Title ");
+            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(e => e.Title).HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(250);
+            entity.Property(e => e.ThumbnailUrl).HasMaxLength(50);
+            entity.Property(e => e.TeacherName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<CourseCategory>(entity =>
@@ -119,102 +111,18 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
         });
       
 
-        //modelBuilder.Entity<IdentityRole>().HasData(
-        //    new IdentityRole
-        //    {
-        //        Name = "Student" , 
-        //        NormalizedName = "STUDENT",
-        //        Id= "0cfbe64f-8d26-4b72-8a66-4655477ffdb1",
-        //        ConcurrencyStamp = "0cfbe64f-8d26-4b72-8a66-4655477ffdb1"
-        //    },
-        //    new IdentityRole
-        //    {
-        //        Name = "Administrator",
-        //        NormalizedName="ADMINISTRATOR",
-        //        Id = "40247282-b48e-4140-a75c-48a104e3ba27",
-        //        ConcurrencyStamp = "40247282-b48e-4140-a75c-48a104e3ba27"
-        //    },
-        //    new IdentityRole
-        //    {
-        //        Name = "Teacher",
-        //        NormalizedName = "TEACHER",
-        //        Id = "ca88f2e0-79ab-4aea-833b-bcfbe53a8bc3",
-        //        ConcurrencyStamp = "ca88f2e0-79ab-4aea-833b-bcfbe53a8bc3"
-        //    }
-        //    );
-        //  var hasher = new PasswordHasher<ApiUser>();
-        
-        //      modelBuilder.Entity<ApiUser>().HasData(
-        //        new ApiUser
-        //           {
-                  
-        //               Id = "a566bd1e-536d-4a83-96d4-ac3824012fc3",
-        //               Email= "admin@samir.com",
-        //               NormalizedEmail= "ADMIN@SAMIR.COM",
-        //               UserName = "admin@samir.com",
-        //               NormalizedUserName= "ADMIN@SAMIR.COM",
-        //               FirstName="System",
-        //               LastName="Admin",
-        //               PasswordHash = hasher.HashPassword(null, "P@ssword1"),
-        //               EmailConfirmed = true,
-        //               SecurityStamp = "a566bd1e-536d-4a83-96d4-ac3824012fc3",
-        //               ConcurrencyStamp = "a566bd1e-536d-4a83-96d4-ac3824012fc3", 
-        //               LockoutEnabled = true 
+        modelBuilder.Entity<Subject>(entity =>
+        {
+            entity.ToTable("Subject");
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Name).HasMaxLength(50);
 
-        //        },
-        //    new ApiUser
-        //       {
-                  
-        //            Id = "0cdff28c-16b3-406c-8660-7deac47f3545",  
-        //            Email = "teacher@samir.com",
-        //            NormalizedEmail = "TEACHER@SAMIR.COM",
-        //            UserName = "teacher@samir.com",
-        //            NormalizedUserName = "TEACHER@SAMIR.COM",
-        //            FirstName = "System",
-        //            LastName = "Teacher",
-        //            PasswordHash = hasher.HashPassword(null, "P@ssword1"),
-        //        EmailConfirmed = true,
-        //        SecurityStamp = "0cdff28c-16b3-406c-8660-7deac47f3545",
-        //        ConcurrencyStamp = "0cdff28c-16b3-406c-8660-7deac47f3545",
-        //        LockoutEnabled = true
-        //    },
-        //    new ApiUser
-        //    {
-        //        Id = "26d2fc9b-2420-4bd4-bc15-402364f3c489",
-        //        Email = "student@samir.com",
-        //        NormalizedEmail = "STUDENT@SAMIR.COM",
-        //        UserName = "student@samir.com",
-        //        NormalizedUserName = "STUDENT@SAMIR.COM",
-        //        FirstName = "System",
-        //        LastName = "Student",
-        //        PasswordHash = hasher.HashPassword(null, "P@ssword1"),
-        //        EmailConfirmed = true,
-        //        SecurityStamp = "26d2fc9b-2420-4bd4-bc15-402364f3c489",
-        //        ConcurrencyStamp = "26d2fc9b-2420-4bd4-bc15-402364f3c489",
-        //        LockoutEnabled = true
-        //    }
-        //       );
-        //modelBuilder.Entity<IdentityUserRole<string>>().HasData(
-        //    new IdentityUserRole<string>
-        //    {
-        //        RoleId = "0cfbe64f-8d26-4b72-8a66-4655477ffdb1",
-        //        UserId = "26d2fc9b-2420-4bd4-bc15-402364f3c489"
+            entity.HasMany(s => s.Teachers)
+                  .WithOne(t => t.Subject)
+                  .HasForeignKey(t => t.SubjectId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
 
-        //    },
-        //    new IdentityUserRole<string>
-        //    {
-        //        RoleId = "40247282-b48e-4140-a75c-48a104e3ba27",
-        //        UserId = "a566bd1e-536d-4a83-96d4-ac3824012fc3"
-
-        //    },
-        //    new IdentityUserRole<string>
-        //    {
-        //        RoleId = "ca88f2e0-79ab-4aea-833b-bcfbe53a8bc3",
-        //        UserId = "0cdff28c-16b3-406c-8660-7deac47f3545"
-
-        //    }
-
-        //    );
 
         OnModelCreatingPartial(modelBuilder);
     }
