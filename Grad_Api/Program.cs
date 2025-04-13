@@ -1,6 +1,7 @@
 ﻿using BookStoreAPI.Confeguration;
 using Grad_Api.Data;
 using Grad_Api.Initializers;
+using Grad_Api.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(MapperConfeg));
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 
 
 builder.Services.AddAuthentication(options =>
