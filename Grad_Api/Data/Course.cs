@@ -11,7 +11,6 @@ public partial class Course
 
     public string? Description { get; set; }
 
-    public string? ThumbnailUrl { get; set; }
 
     public string? TeacherName { get; set; }
 

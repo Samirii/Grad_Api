@@ -6,8 +6,6 @@
 
         public string? Description { get; set; }
 
-        public string? ThumbnailUrl { get; set; }
-
         public string? TeacherName { get; set; }
         public string? CategoryName { get; set; }
         public int LessonCount { get; set; }

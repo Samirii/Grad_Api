@@ -81,7 +81,6 @@ namespace Grad_Api.Controllers
                 {
                     Title = courseDto.Title,
                     Description = courseDto.Description,
-                    ThumbnailUrl = courseDto.ThumbnailUrl,
                     TeacherName = courseDto.TeacherName,
                     CategoryId = courseDto.CategoryId
                 };
@@ -97,5 +96,57 @@ namespace Grad_Api.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCourse(int id)
+        {
+            var course = await _courseRepository.GetAsync(id);
+            if (course == null)
+            {
+                return NotFound();
+            }
+            await _courseRepository.DeleteAsync(id); 
+
+            return NoContent();
+
+
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCourse(int id, CourseUpdateDto courseDto)
+        {
+            if (id != courseDto.Id)
+            {
+                return BadRequest();
+            }
+            var course = await _courseRepository.GetAsync(id);
+            if (course == null)
+            {
+                return NotFound();
+            }
+            _mapper.Map(courseDto, course);
+            try
+            {
+                await _courseRepository.UpdateAsync(course);
+            }
+            catch
+            {
+
+                if (!await CourseExiste(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+
+            }
+            return NoContent();
+        
+        }
+        private async Task<bool> CourseExiste(int id)
+        {
+            return await _courseRepository.Exists(id);
+        }
+
     }
 }

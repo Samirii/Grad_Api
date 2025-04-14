@@ -40,7 +40,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
             entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(250);
-            entity.Property(e => e.ThumbnailUrl).HasMaxLength(50);
+
             entity.Property(e => e.TeacherName).HasMaxLength(100);
         });
 

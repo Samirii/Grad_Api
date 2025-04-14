@@ -40,9 +40,8 @@ namespace Grad_Api.Repository
             {
                 Title = courseDto.Title,
                 Description = courseDto.Description,
-                ThumbnailUrl = courseDto.ThumbnailUrl,
                 TeacherName = courseDto.TeacherName,
-                CategoryId = category.Id, // Use resolved category ID
+                CategoryId = category.Id, 
                 
             };
 
@@ -63,7 +62,6 @@ namespace Grad_Api.Repository
                 Id = c.Id,
                 Title = c.Title,
                 Description = c.Description,
-                ThumbnailUrl = c.ThumbnailUrl,
                 TeacherName = c.TeacherName,
                 CategoryName = c.Category.Name,
                 LessonCount = c.Lessons.Count,

@@ -11,7 +11,9 @@ namespace BookStoreAPI.Confeguration
         public MapperConfeg()
         { 
             CreateMap<ApiUser, UserDto>().ReverseMap();
-            
+            CreateMap<Course, CourseUpdateDto>().ReverseMap();
+
+
             CreateMap<Course, CourseReadDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
                 .ForMember(dest => dest.LessonCount, opt => opt.MapFrom(src => src.Lessons.Count))

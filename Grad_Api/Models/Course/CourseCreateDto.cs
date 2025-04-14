@@ -12,9 +12,6 @@ namespace Grad_Api.Models.Course
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string? Description { get; set; }
 
-        [Url(ErrorMessage = "Invalid URL format")]
-        public string? ThumbnailUrl { get; set; }
-
         [Required(ErrorMessage = "Teacher name is required")]
         public string? TeacherName { get; set; }
 
