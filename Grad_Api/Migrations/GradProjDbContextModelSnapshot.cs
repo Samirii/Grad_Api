@@ -149,7 +149,10 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.Lesson", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .HasMaxLength(50)
@@ -180,7 +183,10 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.Question", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("QuestionText")
                         .HasMaxLength(50)
@@ -201,7 +207,10 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.Quiz", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CourseId")
                         .HasColumnType("int");

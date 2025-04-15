@@ -62,7 +62,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
             entity.ToTable("Lesson");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Content)
                 .HasMaxLength(50)
                 .HasColumnName("Content ");
@@ -84,7 +84,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
             entity.ToTable("Question");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.QuestionText)
                 .HasMaxLength(50)
                 .HasColumnName("QuestionText ");
@@ -100,7 +100,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
             entity.ToTable("Quiz");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .HasColumnName("Title ");

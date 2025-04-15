@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Grad_Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class lessons : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -78,7 +78,6 @@ namespace Grad_Api.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    ThumbnailUrl = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     TeacherName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -130,7 +129,8 @@ namespace Grad_Api.Migrations
                 name: "Lesson",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(name: "Title ", type: "nvarchar(50)", maxLength: 50, nullable: true),
                     VideoUrl = table.Column<string>(name: "VideoUrl ", type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Content = table.Column<string>(name: "Content ", type: "nvarchar(50)", maxLength: 50, nullable: true),
@@ -150,7 +150,8 @@ namespace Grad_Api.Migrations
                 name: "Quiz",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(name: "Title ", type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CourseId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -253,7 +254,8 @@ namespace Grad_Api.Migrations
                 name: "Question",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     QuestionText = table.Column<string>(name: "QuestionText ", type: "nvarchar(50)", maxLength: 50, nullable: true),
                     QuizId = table.Column<int>(type: "int", nullable: true)
                 },

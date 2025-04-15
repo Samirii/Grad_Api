@@ -2,6 +2,7 @@
 using BookStoreAPI;
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
+using Grad_Api.Models.Lessons;
 using Grad_Api.Models.User;
 
 namespace BookStoreAPI.Confeguration
@@ -18,6 +19,9 @@ namespace BookStoreAPI.Confeguration
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
                 .ForMember(dest => dest.LessonCount, opt => opt.MapFrom(src => src.Lessons.Count))
                 .ForMember(dest => dest.QuizCount, opt => opt.MapFrom(src => src.Quizzes.Count));
+            CreateMap<ReadLessonDto,Lesson>().ReverseMap();
+            CreateMap<CreateLessonDto, Lesson>().ReverseMap();
+
         }
     }
 }

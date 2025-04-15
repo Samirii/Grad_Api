@@ -12,7 +12,7 @@ namespace BookStoreAPI.Repositores
             this.context = context; 
  
 }
-        public async Task<T> AddAsync(T entity)
+        public virtual async  Task<T> AddAsync(T entity)
         {
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
