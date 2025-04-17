@@ -209,18 +209,36 @@ namespace Grad_Api.Initializers
 
         private static async Task SeedSubjects(GradProjDbContext context, ILogger logger)
         {
-            if (!context.Subjects.Any())
+            try
             {
-                var subjects = new List<Subject>
+                logger.LogInformation("Starting to seed subjects...");
+                
+                if (!context.Subjects.Any())
                 {
-                    new Subject { Name = "Math" },
-                    new Subject { Name = "Science" },
-                    new Subject { Name = "English" }
-                };
+                    logger.LogInformation("No subjects found in database. Seeding subjects...");
+                    
+                    var subjects = new List<Subject>
+                    {
+                        new Subject { Id = 1, Name = "Math" },
+                        new Subject { Id = 2, Name = "Science" },
+                        new Subject { Id = 3, Name = "English" },
+                      
+                    };
 
-                await context.Subjects.AddRangeAsync(subjects);
-                await context.SaveChangesAsync();
-                logger.LogInformation("Created subjects");
+                    await context.Subjects.AddRangeAsync(subjects);
+                    var result = await context.SaveChangesAsync();
+                    
+                    logger.LogInformation($"Successfully seeded {result} subjects");
+                }
+                else
+                {
+                    logger.LogInformation("Subjects already exist in database. Skipping seeding.");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error occurred while seeding subjects");
+                throw;
             }
         }
     }

@@ -40,20 +40,24 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
             entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(250);
-
             entity.Property(e => e.TeacherName).HasMaxLength(100);
+
+            entity.HasOne(c => c.Category)
+                  .WithMany(c => c.Courses)
+                  .HasForeignKey(c => c.CourseCategoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
+
+
+  
 
         modelBuilder.Entity<CourseCategory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CourseCa__3214EC07415C3794");
-
             entity.ToTable("CourseCategory");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
-                .HasColumnName("Name ");
+                .HasColumnName("Name");
         });
 
         modelBuilder.Entity<Lesson>(entity =>
@@ -65,16 +69,17 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
             entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Content)
                 .HasMaxLength(50)
-                .HasColumnName("Content ");
+                .HasColumnName("Content");
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
-                .HasColumnName("Title ");
+                .HasColumnName("Title");
             entity.Property(e => e.VideoUrl)
                 .HasMaxLength(50)
-                .HasColumnName("VideoUrl ");
+                .HasColumnName("VideoUrl");
 
             entity.HasOne(d => d.Course).WithMany(p => p.Lessons)
                 .HasForeignKey(d => d.CourseId)
+                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Lesson_ToTable");
         });
 
@@ -103,7 +108,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
             entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
-                .HasColumnName("Title ");
+                .HasColumnName("Title");
 
             entity.HasOne(d => d.Course).WithMany(p => p.Quizzes)
                 .HasForeignKey(d => d.CourseId)
@@ -114,7 +119,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
         modelBuilder.Entity<Subject>(entity =>
         {
             entity.ToTable("Subject");
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Name).HasMaxLength(50);
 
             entity.HasMany(s => s.Teachers)

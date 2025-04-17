@@ -23,14 +23,10 @@ builder.Services.AddAutoMapper(typeof(MapperConfeg));
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 
-
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-
 }).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -43,12 +39,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-
-
     };
 });
-
-
 
 builder.Services.AddDbContext<GradProjDbContext>(options =>
 {
@@ -76,30 +68,31 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();  
-   
 }
 
-
-try
+// 🔹 Initialize Database and Seed Data
+using (var scope = app.Services.CreateScope())
 {
-    await DbInitializer.Initialize(app.Services);
-}
-catch (Exception ex)
-{
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "An error occurred while seeding the database");
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<GradProjDbContext>();
+        // Ensure database is created
+        context.Database.EnsureCreated();
+        // Seed the data
+        await DbInitializer.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database");
+    }
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllers(); 
-
-
+app.MapControllers();
 app.MapGet("/swagger", () => "");
-
 app.Run();

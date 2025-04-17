@@ -135,6 +135,16 @@ namespace Grad_Api.Repository
             }
         }
 
+
+        public async Task<List<ReadLessonDto>> GetLessonsByCourseIdAsync(int courseId)
+        {
+            return await _context.Lessons
+                .Where(l => l.CourseId == courseId)
+                .Include(l => l.Course)  // Include course if needed
+                .ProjectTo<ReadLessonDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+
         public async Task<bool> CourseExistsAsync(int courseId)
         {
             return await _context.Courses.AnyAsync(c => c.Id == courseId);

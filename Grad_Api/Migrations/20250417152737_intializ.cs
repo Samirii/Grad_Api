@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Grad_Api.Migrations
 {
     /// <inheritdoc />
-    public partial class lessons : Migration
+    public partial class intializ : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -29,19 +29,21 @@ namespace Grad_Api.Migrations
                 name: "CourseCategory",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(name: "Name ", type: "nvarchar(50)", maxLength: 50, nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK__CourseCa__3214EC07415C3794", x => x.Id);
+                    table.PrimaryKey("PK_CourseCategory", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Subject",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -79,16 +81,17 @@ namespace Grad_Api.Migrations
                     Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     TeacherName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    CategoryId = table.Column<int>(type: "int", nullable: true)
+                    CourseCategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Course", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Course_CourseCategory_CategoryId",
-                        column: x => x.CategoryId,
+                        name: "FK_Course_CourseCategory_CourseCategoryId",
+                        column: x => x.CourseCategoryId,
                         principalTable: "CourseCategory",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -131,9 +134,9 @@ namespace Grad_Api.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(name: "Title ", type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    VideoUrl = table.Column<string>(name: "VideoUrl ", type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Content = table.Column<string>(name: "Content ", type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    VideoUrl = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CourseId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -143,7 +146,8 @@ namespace Grad_Api.Migrations
                         name: "FK_Lesson_ToTable",
                         column: x => x.CourseId,
                         principalTable: "Course",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -152,7 +156,7 @@ namespace Grad_Api.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(name: "Title ", type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CourseId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -314,9 +318,9 @@ namespace Grad_Api.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Course_CategoryId",
+                name: "IX_Course_CourseCategoryId",
                 table: "Course",
-                column: "CategoryId");
+                column: "CourseCategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Lesson_CourseId",

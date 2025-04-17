@@ -30,8 +30,9 @@ namespace Grad_Api.Controllers
         {
             try
             {
-                var courses = await _courseRepository.GetAllAsync();
-                return Ok(courses);
+                var courses = await _courseRepository.GetAllCoursesAsync();
+                var courseDtos = _mapper.Map<List<CourseReadDto>>(courses);
+                return Ok(courseDtos);
             }
             catch (Exception ex)
             {
@@ -44,7 +45,7 @@ namespace Grad_Api.Controllers
         {
             try
             {
-                var course = await _courseRepository.GetAsync(id);
+                var course = await _courseRepository.GetCourseAsync(id);
 
                 if (course == null)
                 {
@@ -82,7 +83,7 @@ namespace Grad_Api.Controllers
                     Title = courseDto.Title,
                     Description = courseDto.Description,
                     TeacherName = courseDto.TeacherName,
-                    CategoryId = courseDto.CategoryId
+                    CourseCategoryId = courseDto.CategoryId
                 };
 
                 await _courseRepository.AddAsync(course);
@@ -143,6 +144,29 @@ namespace Grad_Api.Controllers
             return NoContent();
         
         }
+        [HttpGet("by-category/{categoryId}")]
+        public async Task<ActionResult<IEnumerable<CourseReadDto>>> GetCoursesByCategory(int categoryId)
+        {
+            try
+            {
+                var courses = await _courseRepository.GetCoursesByCategoryAsync(categoryId);
+
+                if (courses == null || !courses.Any())
+                {
+                    return NotFound($"No courses found for category ID {categoryId}");
+                }
+
+                return Ok(courses);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting courses for category ID {categoryId}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+
+
         private async Task<bool> CourseExiste(int id)
         {
             return await _courseRepository.Exists(id);

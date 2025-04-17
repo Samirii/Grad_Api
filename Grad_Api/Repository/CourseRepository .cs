@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using BookStoreAPI.Repositores;
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
+using Grad_Api.Models.Lessons;
 using Microsoft.EntityFrameworkCore;
 using static Grad_Api.Repository.CourseRepository;
 
@@ -41,7 +42,7 @@ namespace Grad_Api.Repository
                 Title = courseDto.Title,
                 Description = courseDto.Description,
                 TeacherName = courseDto.TeacherName,
-                CategoryId = category.Id, 
+                CourseCategoryId = category.Id, 
                 
             };
 
@@ -52,35 +53,81 @@ namespace Grad_Api.Repository
         }
 
         public async Task<List<CourseReadDto>> GetAllCoursesAsync()
+        {
+            try
             {
-                return await _context.Courses
-                .Include(c => c.Category)
-                .Include(c => c.Lessons)
-                .Include(c => c.Quizzes)
-                .Select(c => new CourseReadDto
-                {
-                Id = c.Id,
-                Title = c.Title,
-                Description = c.Description,
-                TeacherName = c.TeacherName,
-                CategoryName = c.Category.Name,
-                LessonCount = c.Lessons.Count,
-                QuizCount = c.Quizzes.Count
-            })
-            .ToListAsync();
+                var courses = await _context.Courses
+                    .AsNoTracking()
+                    .Include(c => c.Category)
+                    .Include(c => c.Lessons)
+                    .Select(c => new CourseReadDto
+                    {
+                        Id = c.Id,
+                        Title = c.Title,
+                        Description = c.Description,
+                        TeacherName = c.TeacherName,
+                        CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
+                        LessonCount = c.Lessons.Count,
+                        QuizCount = c.Quizzes.Count,
+                        Lessons = c.Lessons.Select(l => new ReadLessonDto
+                        {
+                            Id = l.Id,
+                            Title = l.Title,
+                            Content = l.Content,
+                            VideoUrl = l.VideoUrl,
+                            CourseId = l.CourseId
+                        }).ToList()
+                    })
+                    .ToListAsync();
+
+                Console.WriteLine($"Found {courses.Count} courses");
+                return courses;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllCoursesAsync: {ex.Message}");
+                throw;
+            }
         }
 
-            public async Task<CourseReadDto?> GetCourseAsync(int id)
+        public async Task<CourseReadDto?> GetCourseAsync(int id)
+        {
+            try
             {
                 var course = await _context.Courses
-                    .Include(c => c.Category) // Include category
-                    .FirstOrDefaultAsync(c => c.Id == id);
+                    .AsNoTracking()
+                    .Include(c => c.Category)
+                    .Include(c => c.Lessons)
+                    .Where(c => c.Id == id)
+                    .Select(c => new CourseReadDto
+                    {
+                        Id = c.Id,
+                        Title = c.Title,
+                        Description = c.Description,
+                        TeacherName = c.TeacherName,
+                        CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
+                        LessonCount = c.Lessons.Count,
+                        QuizCount = c.Quizzes.Count,
+                        Lessons = c.Lessons.Select(l => new ReadLessonDto
+                        {
+                            Id = l.Id,
+                            Title = l.Title,
+                            Content = l.Content,
+                            VideoUrl = l.VideoUrl,
+                            CourseId = l.CourseId
+                        }).ToList()
+                    })
+                    .FirstOrDefaultAsync();
 
-                if (course == null)
-                    return null;
-
-                return _mapper.Map<CourseReadDto>(course);
+                Console.WriteLine($"Course found: ID={id}, HasLessons={(course?.Lessons?.Count > 0)}");
+                return course;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetCourseAsync: {ex.Message}");
+                throw;
+            }
+        }
 
         public async Task<CourseCategory> GetCourseCategoryAsync(int courseCatId)
         {
@@ -90,22 +137,49 @@ namespace Grad_Api.Repository
 
         // Additional useful methods
         public async Task<List<CourseReadDto>> GetCoursesByCategoryAsync(int categoryId)
-            {
-                return await _context.Courses
-                    .Include(c => c.Category)
-                    .Where(c => c.CategoryId == categoryId)
-                    .ProjectTo<CourseReadDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-            }
-
-            public async Task<List<CourseReadDto>> GetCoursesByTeacherAsync(string teacherName)
-            {
-                return await _context.Courses
-                    .Include(c => c.Category)
-                    .Where(c => c.TeacherName == teacherName)
-                    .ProjectTo<CourseReadDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-            }
+        {
+            return await _context.Courses
+                .Where(c => c.CourseCategoryId == categoryId)
+                .Include(c => c.Category)
+                .Include(c => c.Lessons)
+                .Include(c => c.Quizzes)
+                .Select(c => new CourseReadDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    TeacherName = c.TeacherName,
+                    CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
+                    LessonCount = c.Lessons.Count,
+                    QuizCount = c.Quizzes.Count
+                })
+                .ToListAsync();
         }
+
+        public Task<List<CourseReadDto>> GetCoursesByTeacherAsync(string teacherName)
+        {
+            throw new NotImplementedException();
+        }
+
+        //public async Task<List<CourseReadDto>> GetCoursesByTeacherAsync(string teacherName)
+        //{
+        //    return await _context.Courses
+        //        .Where(c => c.TeacherName == teacherName)
+        //        .Include(c => c.Category)
+        //        .Include(c => c.Lessons)
+        //        .Include(c => c.Quizzes)
+        //        .Select(c => new CourseReadDto
+        //        {
+        //            Id = c.Id,
+        //            Title = c.Title,
+        //            Description = c.Description,
+        //            TeacherName = c.TeacherName,
+        //            CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
+        //            LessonCount = c.Lessons.Count,
+        //            QuizCount = c.Quizzes.Count
+        //        })
+        //        .ToListAsync();
+        //}
     }
+}
 

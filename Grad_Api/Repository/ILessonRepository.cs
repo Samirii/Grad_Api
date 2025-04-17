@@ -10,5 +10,6 @@ namespace Grad_Api.Repository
         Task<ReadLessonDto?> GetLessonsById(int id);
         Task<ReadLessonDto> CreateLessonWithQuizCheckAsync(CreateLessonDto dto);
         Task<bool> CourseExistsAsync(int courseId);
+        Task<List<ReadLessonDto>> GetLessonsByCourseIdAsync(int courseId);
     }
 }

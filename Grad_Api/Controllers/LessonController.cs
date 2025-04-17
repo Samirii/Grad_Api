@@ -130,7 +130,28 @@ namespace Grad_Api.Controllers
 
 
         }
-     
+
+        [HttpGet("by-course/{courseId}")]
+        public async Task<ActionResult<IEnumerable<ReadLessonDto>>> GetLessonsByCourseId(int courseId)
+        {
+            try
+            {
+                var lessons = await _lessonRepository.GetLessonsByCourseIdAsync(courseId);
+
+                if (lessons == null || !lessons.Any())
+                {
+                    return NotFound($"No lessons found for course ID {courseId}");
+                }
+
+                return Ok(lessons);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting lessons for course ID {courseId}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
 
     }
 }

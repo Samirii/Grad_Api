@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Grad_Api.Migrations
 {
     [DbContext(typeof(GradProjDbContext))]
-    [Migration("20250415195713_lessons")]
-    partial class lessons
+    [Migration("20250417171515_edditLesson")]
+    partial class edditLesson
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -111,7 +111,7 @@ namespace Grad_Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CourseCategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -128,7 +128,7 @@ namespace Grad_Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CourseCategoryId");
 
                     b.ToTable("Course", (string)null);
                 });
@@ -136,15 +136,17 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.CourseCategory", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("Name ");
+                        .HasColumnName("Name");
 
-                    b.HasKey("Id")
-                        .HasName("PK__CourseCa__3214EC07415C3794");
+                    b.HasKey("Id");
 
                     b.ToTable("CourseCategory", (string)null);
                 });
@@ -160,20 +162,20 @@ namespace Grad_Api.Migrations
                     b.Property<string>("Content")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("Content ");
+                        .HasColumnName("Content");
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("Title ");
+                        .HasColumnName("Title");
 
                     b.Property<string>("VideoUrl")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("VideoUrl ");
+                        .HasColumnName("VideoUrl");
 
                     b.HasKey("Id")
                         .HasName("PK__Lesson__3214EC07751A4E00");
@@ -221,7 +223,7 @@ namespace Grad_Api.Migrations
                     b.Property<string>("Title")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("Title ");
+                        .HasColumnName("Title");
 
                     b.HasKey("Id")
                         .HasName("PK__Quiz__3214EC0747465A37");
@@ -234,7 +236,10 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.Subject", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -393,7 +398,9 @@ namespace Grad_Api.Migrations
                 {
                     b.HasOne("Grad_Api.Data.CourseCategory", "Category")
                         .WithMany("Courses")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CourseCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Category");
                 });
@@ -403,6 +410,8 @@ namespace Grad_Api.Migrations
                     b.HasOne("Grad_Api.Data.Course", "Course")
                         .WithMany("Lessons")
                         .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK_Lesson_ToTable");
 
                     b.Navigation("Course");

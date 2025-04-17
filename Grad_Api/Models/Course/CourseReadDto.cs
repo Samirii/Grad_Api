@@ -1,4 +1,5 @@
-﻿namespace Grad_Api.Models.Course
+﻿using Grad_Api.Models.Lessons;
+namespace Grad_Api.Models.Course
 {
     public class CourseReadDto : BaseDto
     {
@@ -10,5 +11,7 @@
         public string? CategoryName { get; set; }
         public int LessonCount { get; set; }
         public int QuizCount { get; set; }
+        public List<ReadLessonDto>? Lessons { get; set; }
+        //public List<QuizReadDto>? Quizzes { get; set; }
     }
 }

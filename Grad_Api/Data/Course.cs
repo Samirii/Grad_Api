@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Grad_Api.Data;
 
@@ -11,12 +12,13 @@ public partial class Course
 
     public string? Description { get; set; }
 
-
     public string? TeacherName { get; set; }
 
-    public int? CategoryId { get; set; }
-    public CourseCategory Category { get; set; }
+    public int CourseCategoryId { get; set; }
 
+    [ForeignKey("CourseCategoryId")]
+    public virtual CourseCategory Category { get; set; } = null!;
+    
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 
     public virtual ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
