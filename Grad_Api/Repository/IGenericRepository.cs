@@ -1,4 +1,4 @@
-﻿namespace BookStoreAPI.Repositores
+﻿namespace Grad_Api.Repositores
 {
     public interface IGenericRepository<T> where T : class
     {

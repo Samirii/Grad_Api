@@ -2,7 +2,7 @@
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Models.Lessons;
-using Grad_Api.Repository;
+using Grad_Api.Services.Lesson;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,16 +13,16 @@ namespace Grad_Api.Controllers
     [ApiController]
     public class LessonController : ControllerBase
     {
-        private readonly ILessonRepository _lessonRepository;
+        private readonly ILessonService _lessonService;
         private readonly ILogger<LessonController> _logger;
         private readonly IMapper _mapper;
 
         public LessonController(
-            ILessonRepository lessonRepository,
+            ILessonService lessonService,
             ILogger<LessonController> logger,
             IMapper mapper)
         {
-            _lessonRepository = lessonRepository;
+            _lessonService = lessonService;
             _logger = logger;
             _mapper = mapper;
         }
@@ -31,7 +31,7 @@ namespace Grad_Api.Controllers
         {
             try
             {
-                var lessons = await _lessonRepository.GetLessons();
+                var lessons = await _lessonService.GetAllLessonsAsync();
                 return Ok(lessons);
             }
             catch (Exception ex)
@@ -47,7 +47,7 @@ namespace Grad_Api.Controllers
         {
             try
             {
-                var lesson = await _lessonRepository.GetAsync(id);
+                var lesson = await _lessonService.GetLessonAsync(id);
 
                 if (lesson == null)
                 {
@@ -80,7 +80,7 @@ namespace Grad_Api.Controllers
                 _logger.LogInformation("Creating lesson: {@LessonDto}", lessonDto);
 
                
-                var courseExists = await _lessonRepository.CourseExistsAsync(lessonDto.CourseId);
+                var courseExists = await _lessonService.CourseExistsAsync(lessonDto.CourseId);
                 if (!courseExists)
                 {
                     _logger.LogWarning($"Course with ID {lessonDto.CourseId} not found");
@@ -93,7 +93,7 @@ namespace Grad_Api.Controllers
 
                 try
                 {
-                    var createdLesson = await _lessonRepository.AddAsync(lesson);
+                    var createdLesson = await _lessonService.CreateLessonAsync(lessonDto);
                     var lessonReadDto = _mapper.Map<ReadLessonDto>(createdLesson);
                     return CreatedAtAction(nameof(GetLessonById), new { id = createdLesson.Id }, lessonReadDto);
                 }
@@ -119,12 +119,12 @@ namespace Grad_Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLesson(int id)
         {
-            var lesson = await _lessonRepository.GetAsync(id);
+            var lesson = await _lessonService.GetLessonAsync(id);
             if (lesson == null)
             {
                 return NotFound($"Lesson with ID {id} not found");
             }
-            await _lessonRepository.DeleteAsync(id);
+            await _lessonService.DeleteLessonAsync(id);
 
             return NoContent();
 
@@ -136,7 +136,7 @@ namespace Grad_Api.Controllers
         {
             try
             {
-                var lessons = await _lessonRepository.GetLessonsByCourseIdAsync(courseId);
+                var lessons = await _lessonService.GetLessonsByCourseIdAsync(courseId);
 
                 if (lessons == null || !lessons.Any())
                 {

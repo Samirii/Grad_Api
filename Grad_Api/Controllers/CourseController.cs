@@ -2,6 +2,7 @@
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Repository;
+using Grad_Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,105 +13,56 @@ namespace Grad_Api.Controllers
     [ApiController]
     public class CourseController : ControllerBase
     {
-        private readonly ICourseRepository _courseRepository;
+        private readonly ICourseService _courseService;
         private readonly ILogger<CourseController> _logger;
         private readonly IMapper _mapper;
 
         public CourseController(
-            ICourseRepository courseRepository,
+            ICourseService courseService,
             ILogger<CourseController> logger,
             IMapper mapper)
         {
-            _courseRepository = courseRepository;
+            _courseService = courseService;
             _logger = logger;
             _mapper = mapper;
         }
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CourseReadDto>>> GetAllCourses()
+        public async Task<ActionResult<List<CourseReadDto>>> GetAllCourses()
         {
-            try
-            {
-                var courses = await _courseRepository.GetAllCoursesAsync();
-                var courseDtos = _mapper.Map<List<CourseReadDto>>(courses);
-                return Ok(courseDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting all courses");
-                return StatusCode(500, "Internal server error");
-            }
+            var courses = await _courseService.GetAllCoursesAsync();
+            return Ok(courses);
         }
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<CourseReadDto>> GetCourseById(int id)
+        public async Task<ActionResult<CourseReadDto>> GetCourse(int id)
         {
-            try
-            {
-                var course = await _courseRepository.GetCourseAsync(id);
-
-                if (course == null)
-                {
-                    return NotFound($"Course with ID {id} not found");
-                }
-
-                return Ok(course);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error getting course with ID {id}");
-                return StatusCode(500, "Internal server error");
-            }
+            var course = await _courseService.GetCourseAsync(id);
+            if (course == null)
+                return NotFound();
+            return Ok(course);
         }
 
         [HttpPost]
-        public async Task<ActionResult<CourseReadDto>> PostCourse(CourseCreateDto courseDto)
+        public async Task<ActionResult<CourseReadDto>> CreateCourse(CourseCreateDto courseDto)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                // Get the category from the database
-                var category = await _courseRepository.GetCourseCategoryAsync(courseDto.CategoryId);
-                if (category == null)
-                {
-                    return BadRequest($"Category with ID {courseDto.CategoryId} not found");
-                }
-
-                var course = new Course
-                {
-                    Title = courseDto.Title,
-                    Description = courseDto.Description,
-                    TeacherName = courseDto.TeacherName,
-                    CourseCategoryId = courseDto.CategoryId
-                };
-
-                await _courseRepository.AddAsync(course);
-
-                var courseReadDto = _mapper.Map<CourseReadDto>(course);
-                return CreatedAtAction(nameof(GetCourseById), new { id = course.Id }, courseReadDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating new course");
-                return StatusCode(500, "Internal server error");
-            }
+            var course = await _courseService.CreateCourseAsync(courseDto);
+            return CreatedAtAction(nameof(GetCourse), new { id = course.Id }, course);
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
-            var course = await _courseRepository.GetAsync(id);
+            var course = await _courseService.GetCourseAsync(id);
             if (course == null)
             {
                 return NotFound();
             }
-            await _courseRepository.DeleteAsync(id); 
+            await _courseService.DeleteCourseAsync(id); 
 
             return NoContent();
-
-
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, CourseUpdateDto courseDto)
         {
@@ -118,7 +70,7 @@ namespace Grad_Api.Controllers
             {
                 return BadRequest();
             }
-            var course = await _courseRepository.GetAsync(id);
+            var course = await _courseService.GetCourseAsync(id);
             if (course == null)
             {
                 return NotFound();
@@ -126,11 +78,10 @@ namespace Grad_Api.Controllers
             _mapper.Map(courseDto, course);
             try
             {
-                await _courseRepository.UpdateAsync(course);
+                await _courseService.UpdateCourseAsync(id, courseDto);
             }
             catch
             {
-
                 if (!await CourseExiste(id))
                 {
                     return NotFound();
@@ -139,38 +90,22 @@ namespace Grad_Api.Controllers
                 {
                     throw;
                 }
-
             }
             return NoContent();
-        
         }
-        [HttpGet("by-category/{categoryId}")]
-        public async Task<ActionResult<IEnumerable<CourseReadDto>>> GetCoursesByCategory(int categoryId)
+
+        [HttpGet("category/{categoryId}")]
+        public async Task<ActionResult<List<CourseReadDto>>> GetCoursesByCategory(int categoryId)
         {
-            try
-            {
-                var courses = await _courseRepository.GetCoursesByCategoryAsync(categoryId);
-
-                if (courses == null || !courses.Any())
-                {
-                    return NotFound($"No courses found for category ID {categoryId}");
-                }
-
-                return Ok(courses);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error getting courses for category ID {categoryId}");
-                return StatusCode(500, "Internal server error");
-            }
+            var courses = await _courseService.GetCoursesByCategoryAsync(categoryId);
+            return Ok(courses);
         }
-
 
 
         private async Task<bool> CourseExiste(int id)
         {
-            return await _courseRepository.Exists(id);
+            return await _courseService.Exists(id);
+           
         }
-
     }
 }

@@ -14,6 +14,7 @@ namespace BookStoreAPI.Confeguration
             CreateMap<ApiUser, UserDto>().ReverseMap();
             CreateMap<Course, CourseUpdateDto>().ReverseMap();
 
+            CreateMap<Course, CourseReadDto>().ReverseMap();
 
             CreateMap<Course, CourseReadDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
@@ -21,6 +22,8 @@ namespace BookStoreAPI.Confeguration
                 .ForMember(dest => dest.QuizCount, opt => opt.MapFrom(src => src.Quizzes.Count));
             CreateMap<ReadLessonDto,Lesson>().ReverseMap();
             CreateMap<CreateLessonDto, Lesson>().ReverseMap();
+            
+
 
         }
     }

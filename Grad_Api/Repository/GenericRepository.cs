@@ -1,5 +1,6 @@
 ﻿
 using Grad_Api.Data;
+using Grad_Api.Repositores;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookStoreAPI.Repositores
