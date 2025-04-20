@@ -5,6 +5,7 @@ using Grad_Api.Repository;
 using Grad_Api.Repository;
 using Grad_Api.Services;
 using Grad_Api.Services;
+using Grad_Api.Services.Enrollment;
 using Grad_Api.Services.Lesson;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -28,6 +29,10 @@ builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 builder.Services.AddScoped<ILessonService, LessonService>();
+builder.Services.AddScoped<IEnrollmentRepoaitory, EnrollmentRepository>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+
+
 
 
 builder.Services.AddAuthentication(options =>

@@ -28,11 +28,17 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
     public virtual DbSet<Quiz> Quizzes { get; set; }
 
     public virtual DbSet<Subject> Subjects { get; set; }
+    public virtual DbSet<Enrollment> Enrollments { get; set; }
 
-   
+
+
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating( modelBuilder);
+        modelBuilder.Entity<ApiUser>().ToTable("AspNetUsers");
+
 
         modelBuilder.Entity<Course>(entity =>
         {
@@ -49,7 +55,29 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
         });
 
 
-  
+
+        modelBuilder.Entity<Enrollment>(entity =>
+        {
+            entity.ToTable("Enrollment");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).UseIdentityColumn();
+
+            entity.Property(e => e.StudentId)
+                  .IsRequired()
+                  .HasMaxLength(450); // Match Identity's default Id length
+
+            entity.HasOne(e => e.Student)
+                  .WithMany(s => s.Enrollments)
+                  .HasForeignKey(e => e.StudentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Course)
+                  .WithMany(c => c.Enrollments)
+                  .HasForeignKey(e => e.CourseId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
 
         modelBuilder.Entity<CourseCategory>(entity =>
         {
@@ -116,17 +144,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
         });
       
 
-        modelBuilder.Entity<Subject>(entity =>
-        {
-            entity.ToTable("Subject");
-            entity.Property(e => e.Id).UseIdentityColumn();
-            entity.Property(e => e.Name).HasMaxLength(50);
-
-            entity.HasMany(s => s.Teachers)
-                  .WithOne(t => t.Subject)
-                  .HasForeignKey(t => t.SubjectId)
-                  .OnDelete(DeleteBehavior.SetNull);
-        });
+ 
 
 
         OnModelCreatingPartial(modelBuilder);

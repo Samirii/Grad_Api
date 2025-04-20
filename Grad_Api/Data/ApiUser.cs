@@ -9,6 +9,8 @@ namespace Grad_Api.Data
         public string LastName { get; set; }
         public int? SubjectId { get; set; }
         public Subject? Subject { get; set; }
+        public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+
     }
 
 
