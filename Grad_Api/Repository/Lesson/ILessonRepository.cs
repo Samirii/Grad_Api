@@ -1,6 +1,7 @@
 ﻿using BookStoreAPI.Repositores;
 using Grad_Api.Data;
 using Grad_Api.Models.Lessons;
+using Grad_Api.Repositores;
 
 namespace Grad_Api.Repository
 {
@@ -11,5 +12,7 @@ namespace Grad_Api.Repository
         Task<ReadLessonDto> CreateLessonWithQuizCheckAsync(CreateLessonDto dto);
         Task<bool> CourseExistsAsync(int courseId);
         Task<List<ReadLessonDto>> GetLessonsByCourseIdAsync(int courseId);
+        Task<bool> DeleteLessonAsync(int id);
+
     }
 }

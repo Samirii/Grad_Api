@@ -2,6 +2,10 @@
 using Grad_Api.Data;
 using Grad_Api.Initializers;
 using Grad_Api.Repository;
+using Grad_Api.Repository;
+using Grad_Api.Services;
+using Grad_Api.Services;
+using Grad_Api.Services.Lesson;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +25,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(MapperConfeg));
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+builder.Services.AddScoped<ILessonService, LessonService>();
+
 
 builder.Services.AddAuthentication(options =>
 {
