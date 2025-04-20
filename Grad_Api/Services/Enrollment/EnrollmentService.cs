@@ -56,6 +56,7 @@ namespace Grad_Api.Services.Enrollment
 
         public async Task<List<EnrollmentReadDto>> GetAllEnrollmentAsync()
         {
+
             try
             {
                 var enrollments = await _enrollmentRepository.GetAllEnrollments();
