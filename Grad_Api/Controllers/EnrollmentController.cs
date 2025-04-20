@@ -52,7 +52,7 @@ namespace Grad_Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+         
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEnrollment(int id)
         {
