@@ -11,7 +11,7 @@ namespace Grad_Api.Models.Lessons
 
         public string? Content { get; set; }
 
-        public int? CourseId { get; set; }
+        public int CourseId { get; set; }
         public bool HasQuiz { get; set; }
     }
 }

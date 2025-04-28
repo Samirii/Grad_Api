@@ -7,9 +7,12 @@ namespace Grad_Api.Data
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+       
         public int? SubjectId { get; set; }
         public Subject? Subject { get; set; }
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public virtual ICollection<QuizScore> QuizScores { get; set; } = new List<QuizScore>();
+
 
     }
 

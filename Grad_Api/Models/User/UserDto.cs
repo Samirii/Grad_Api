@@ -26,5 +26,10 @@ namespace Grad_Api.Models.User
         // For teacher registration only
         [Range(1, 3, ErrorMessage = "Subject ID must be between 1 and 3")]
         public int? SubjectId { get; set; }
+
+        [Required]
+        [Phone]
+        [RegularExpression(@"^\+?[0-9]{10,15}$", ErrorMessage = "Phone number must be between 10 and 15 digits")]
+        public string PhoneNumber { get; set; }
     }
 }

@@ -70,6 +70,8 @@ namespace Grad_Api.Controllers
                 var user = mapper.Map<ApiUser>(userDto);
                 user.UserName = userDto.Email;
                 user.SubjectId = userDto.SubjectId;
+                user.PhoneNumber = userDto.PhoneNumber;
+                user.PhoneNumberConfirmed = true; // Set to true if you want to skip phone verification
 
                 var result = await userManager.CreateAsync(user, userDto.Password);
 
@@ -105,7 +107,8 @@ namespace Grad_Api.Controllers
                     SubjectId = user.SubjectId,
                     SubjectName = subjectName,
                     FirstName = user.FirstName,
-                    LastName = user.LastName
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber
                 });
             }
             catch (Exception ex)
@@ -116,7 +119,6 @@ namespace Grad_Api.Controllers
                   title: "An error occurred while registering the user",
                   statusCode: 500);
             }
-
         }
            
 

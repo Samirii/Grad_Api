@@ -63,9 +63,10 @@ namespace Grad_Api.Repository
                     Id = enrollment.Id,
                     StudentId = enrollment.StudentId,
                     CourseId = enrollment.CourseId,
-                  
+
                     CourseTitle = course.Title,
-                    StudentName = $"{student.FirstName} {student.LastName}"
+                    TeacherName = course.TeacherName,
+                    LessonCount = course.Lessons.Count,
                 };
             }
             catch (Exception ex)
@@ -91,7 +92,8 @@ namespace Grad_Api.Repository
                         
                         
                         CourseTitle = e.Course.Title,
-                        StudentName = $"{e.Student.FirstName} {e.Student.LastName}"
+                        TeacherName=e.Course.TeacherName,
+                        LessonCount = e.Course.Lessons.Count,
                     })
                     .ToListAsync();
 
@@ -139,7 +141,9 @@ namespace Grad_Api.Repository
                         CourseId = e.CourseId,
                       
                         CourseTitle = e.Course.Title,
-                        StudentName = $"{e.Student.FirstName} {e.Student.LastName}"
+                        TeacherName = e.Course.TeacherName,
+                        LessonCount = e.Course.Lessons.Count,
+
                     })
                     .ToListAsync();
 
@@ -170,7 +174,8 @@ namespace Grad_Api.Repository
                     StudentId = enrollment.StudentId,
                     CourseId = enrollment.CourseId,                  
                     CourseTitle = enrollment.Course.Title,
-                    StudentName = $"{enrollment.Student.FirstName} {enrollment.Student.LastName}"
+                    TeacherName = enrollment.Course.TeacherName,
+                    LessonCount = enrollment.Course.Lessons.Count,
                 };
             }
             catch (Exception ex)

@@ -26,6 +26,8 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
     public virtual DbSet<Question> Questions { get; set; }
 
     public virtual DbSet<Quiz> Quizzes { get; set; }
+    public virtual DbSet<QuizScore> QuizScores { get; set; }
+
 
     public virtual DbSet<Subject> Subjects { get; set; }
     public virtual DbSet<Enrollment> Enrollments { get; set; }
@@ -96,7 +98,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
             entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.Content)
-                .HasMaxLength(50)
+                .HasMaxLength(2000)
                 .HasColumnName("Content");
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
@@ -109,6 +111,12 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
                 .HasForeignKey(d => d.CourseId)
                  .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Lesson_ToTable");
+
+            entity.HasMany(lesson => lesson.Quizes) 
+                .WithOne(quiz => quiz.Lesson)    
+                .HasForeignKey(quiz => quiz.LessonId) 
+                .OnDelete(DeleteBehavior.Restrict);
+
         });
 
         modelBuilder.Entity<Question>(entity =>
@@ -138,9 +146,14 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
                 .HasMaxLength(50)
                 .HasColumnName("Title");
 
-            entity.HasOne(d => d.Course).WithMany(p => p.Quizzes)
-                .HasForeignKey(d => d.CourseId)
-                .HasConstraintName("FK_Quiz_ToTable");
+            entity.HasIndex(e => e.LessonId)
+                .IsUnique();
+
+            entity.HasOne(q => q.Lesson)
+                .WithMany(l => l.Quizes)
+                .HasForeignKey(q => q.LessonId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
         });
       
 

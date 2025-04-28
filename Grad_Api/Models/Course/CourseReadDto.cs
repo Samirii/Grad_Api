@@ -10,8 +10,6 @@ namespace Grad_Api.Models.Course
         public string? TeacherName { get; set; }
         public string? CategoryName { get; set; }
         public int LessonCount { get; set; }
-        public int QuizCount { get; set; }
         public List<ReadLessonDto>? Lessons { get; set; }
-        //public List<QuizReadDto>? Quizzes { get; set; }
     }
 }

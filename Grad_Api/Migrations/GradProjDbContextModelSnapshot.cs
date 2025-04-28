@@ -161,6 +161,7 @@ namespace Grad_Api.Migrations
 
                     b.Property<string>("StudentId")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -181,8 +182,8 @@ namespace Grad_Api.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)")
                         .HasColumnName("Content");
 
                     b.Property<int>("CourseId")
@@ -214,6 +215,21 @@ namespace Grad_Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CorrectAnswer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionA")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionB")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionC")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionD")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("QuestionText")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -238,7 +254,7 @@ namespace Grad_Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("LessonId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -249,9 +265,37 @@ namespace Grad_Api.Migrations
                     b.HasKey("Id")
                         .HasName("PK__Quiz__3214EC0747465A37");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("LessonId")
+                        .IsUnique();
 
                     b.ToTable("Quiz", (string)null);
+                });
+
+            modelBuilder.Entity("Grad_Api.Data.QuizScore", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+
+                    b.Property<int>("QuizId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("QuizId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("QuizScores");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Subject", b =>
@@ -467,12 +511,32 @@ namespace Grad_Api.Migrations
 
             modelBuilder.Entity("Grad_Api.Data.Quiz", b =>
                 {
-                    b.HasOne("Grad_Api.Data.Course", "Course")
-                        .WithMany("Quizzes")
-                        .HasForeignKey("CourseId")
-                        .HasConstraintName("FK_Quiz_ToTable");
+                    b.HasOne("Grad_Api.Data.Lesson", "Lesson")
+                        .WithMany("Quizes")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("Course");
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("Grad_Api.Data.QuizScore", b =>
+                {
+                    b.HasOne("Grad_Api.Data.Quiz", "Quiz")
+                        .WithMany("QuizScores")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Grad_Api.Data.ApiUser", "Student")
+                        .WithMany("QuizScores")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -529,6 +593,8 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.ApiUser", b =>
                 {
                     b.Navigation("Enrollments");
+
+                    b.Navigation("QuizScores");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Course", b =>
@@ -536,8 +602,6 @@ namespace Grad_Api.Migrations
                     b.Navigation("Enrollments");
 
                     b.Navigation("Lessons");
-
-                    b.Navigation("Quizzes");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.CourseCategory", b =>
@@ -545,9 +609,16 @@ namespace Grad_Api.Migrations
                     b.Navigation("Courses");
                 });
 
+            modelBuilder.Entity("Grad_Api.Data.Lesson", b =>
+                {
+                    b.Navigation("Quizes");
+                });
+
             modelBuilder.Entity("Grad_Api.Data.Quiz", b =>
                 {
                     b.Navigation("Questions");
+
+                    b.Navigation("QuizScores");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Subject", b =>

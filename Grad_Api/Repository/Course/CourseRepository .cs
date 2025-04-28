@@ -82,7 +82,6 @@ namespace Grad_Api.Repository
                     .AsNoTracking()
                     .Include(c => c.Category)
                     .Include(c => c.Lessons)
-                    .Include(c => c.Quizzes)
                     .Select(c => new CourseReadDto
                     {
                         Id = c.Id,
@@ -91,7 +90,6 @@ namespace Grad_Api.Repository
                         TeacherName = c.TeacherName,
                         CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
                         LessonCount = c.Lessons.Count,
-                        QuizCount = c.Quizzes.Count,
                         Lessons = c.Lessons.Select(l => new ReadLessonDto
                         {
                             Id = l.Id,
@@ -123,7 +121,7 @@ namespace Grad_Api.Repository
                     .AsNoTracking()
                     .Include(c => c.Category)
                     .Include(c => c.Lessons)
-                    .Include(c => c.Quizzes)
+                   
                     .Where(c => c.Id == id)
                     .Select(c => new CourseReadDto
                     {
@@ -133,7 +131,7 @@ namespace Grad_Api.Repository
                         TeacherName = c.TeacherName,
                         CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
                         LessonCount = c.Lessons.Count,
-                        QuizCount = c.Quizzes.Count,
+                        
                         Lessons = c.Lessons.Select(l => new ReadLessonDto
                         {
                             Id = l.Id,
@@ -177,7 +175,7 @@ namespace Grad_Api.Repository
                     .AsNoTracking()
                     .Include(c => c.Category)
                     .Include(c => c.Lessons)
-                    .Include(c => c.Quizzes)
+
                     .Where(c => c.CourseCategoryId == categoryId)
                     .Select(c => new CourseReadDto
                     {
@@ -187,7 +185,7 @@ namespace Grad_Api.Repository
                         TeacherName = c.TeacherName,
                         CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
                         LessonCount = c.Lessons.Count,
-                        QuizCount = c.Quizzes.Count,
+                      
                         Lessons = c.Lessons.Select(l => new ReadLessonDto
                         {
                             Id = l.Id,
@@ -199,7 +197,7 @@ namespace Grad_Api.Repository
                     })
                     .ToListAsync();
 
-                _logger.LogInformation("Retrieved {Count} courses for category {CategoryId}", courses.Count, categoryId);
+                
                 return courses;
             }
             catch (Exception ex)
@@ -219,7 +217,7 @@ namespace Grad_Api.Repository
                     .AsNoTracking()
                     .Include(c => c.Category)
                     .Include(c => c.Lessons)
-                    .Include(c => c.Quizzes)
+                   
                     .Where(c => c.TeacherName.Equals(teacherName, StringComparison.OrdinalIgnoreCase))
                     .Select(c => new CourseReadDto
                     {
@@ -229,7 +227,7 @@ namespace Grad_Api.Repository
                         TeacherName = c.TeacherName,
                         CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
                         LessonCount = c.Lessons.Count,
-                        QuizCount = c.Quizzes.Count,
+                        
                         Lessons = c.Lessons.Select(l => new ReadLessonDto
                         {
                             Id = l.Id,
