@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Grad_Api.Migrations
 {
     [DbContext(typeof(GradProjDbContext))]
-    [Migration("20250428134257_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250429231948_edit")]
+    partial class edit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -221,6 +221,14 @@ namespace Grad_Api.Migrations
                     b.Property<string>("CorrectAnswer")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CourseCategory")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Defficulty")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("OptionA")
                         .HasColumnType("nvarchar(max)");
 
@@ -241,6 +249,13 @@ namespace Grad_Api.Migrations
                     b.Property<int?>("QuizId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UnitNumber")
+                        .HasColumnType("int");
+
                     b.HasKey("Id")
                         .HasName("PK__Question__3214EC079DB2C3F8");
 
@@ -257,9 +272,6 @@ namespace Grad_Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("LessonId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -267,9 +279,6 @@ namespace Grad_Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK__Quiz__3214EC0747465A37");
-
-                    b.HasIndex("LessonId")
-                        .IsUnique();
 
                     b.ToTable("Quiz", (string)null);
                 });
@@ -298,7 +307,7 @@ namespace Grad_Api.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("QuizScore");
+                    b.ToTable("QuizScores");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Subject", b =>
@@ -512,17 +521,6 @@ namespace Grad_Api.Migrations
                     b.Navigation("Quiz");
                 });
 
-            modelBuilder.Entity("Grad_Api.Data.Quiz", b =>
-                {
-                    b.HasOne("Grad_Api.Data.Lesson", "Lesson")
-                        .WithMany("Quizes")
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-                });
-
             modelBuilder.Entity("Grad_Api.Data.QuizScore", b =>
                 {
                     b.HasOne("Grad_Api.Data.Quiz", "Quiz")
@@ -610,11 +608,6 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.CourseCategory", b =>
                 {
                     b.Navigation("Courses");
-                });
-
-            modelBuilder.Entity("Grad_Api.Data.Lesson", b =>
-                {
-                    b.Navigation("Quizes");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Quiz", b =>

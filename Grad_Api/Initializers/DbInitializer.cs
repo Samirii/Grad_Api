@@ -196,9 +196,9 @@ namespace Grad_Api.Initializers
             {
                 var categories = new List<CourseCategory>
                 {
-                    new CourseCategory { Id = 1, Name = "prep1" },
-                    new CourseCategory { Id = 2, Name = "prep2" },
-                    new CourseCategory { Id = 3, Name = "prep3" }
+                    new CourseCategory { Name = "prep1" },
+                    new CourseCategory {  Name = "prep2" },
+                    new CourseCategory {Name = "prep3" }
                 };
 
                 await context.CourseCategories.AddRangeAsync(categories);
@@ -219,9 +219,9 @@ namespace Grad_Api.Initializers
                     
                     var subjects = new List<Subject>
                     {
-                        new Subject { Id = 1, Name = "Math" },
-                        new Subject { Id = 2, Name = "Science" },
-                        new Subject { Id = 3, Name = "English" },
+                        new Subject {  Name = "Math" },
+                        new Subject {  Name = "Science" },
+                        new Subject { Name = "English" },
                       
                     };
 

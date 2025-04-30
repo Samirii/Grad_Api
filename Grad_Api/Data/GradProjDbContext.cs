@@ -32,6 +32,8 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
     public virtual DbSet<Subject> Subjects { get; set; }
     public virtual DbSet<Enrollment> Enrollments { get; set; }
 
+    
+
 
 
 
@@ -112,10 +114,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
                  .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Lesson_ToTable");
 
-            entity.HasMany(lesson => lesson.Quizes) 
-                .WithOne(quiz => quiz.Lesson)    
-                .HasForeignKey(quiz => quiz.LessonId) 
-                .OnDelete(DeleteBehavior.Restrict);
+           
 
         });
 
@@ -127,7 +126,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
             entity.Property(e => e.Id).UseIdentityColumn();
             entity.Property(e => e.QuestionText)
-                .HasMaxLength(50)
+                .HasMaxLength(1000)
                 .HasColumnName("QuestionText ");
 
             entity.HasOne(d => d.Quiz).WithMany(p => p.Questions)
@@ -146,14 +145,9 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
                 .HasMaxLength(50)
                 .HasColumnName("Title");
 
-            entity.HasIndex(e => e.LessonId)
-                .IsUnique();
+          
 
-            entity.HasOne(q => q.Lesson)
-                .WithMany(l => l.Quizes)
-                .HasForeignKey(q => q.LessonId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired();
+        
         });
       
 

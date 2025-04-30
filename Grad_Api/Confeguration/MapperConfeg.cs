@@ -3,6 +3,7 @@ using BookStoreAPI;
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Models.Lessons;
+using Grad_Api.Models.Quiz;
 using Grad_Api.Models.User;
 
 namespace BookStoreAPI.Confeguration
@@ -22,7 +23,10 @@ namespace BookStoreAPI.Confeguration
                 
             CreateMap<ReadLessonDto,Lesson>().ReverseMap();
             CreateMap<CreateLessonDto, Lesson>().ReverseMap();
-            
+            CreateMap<QuizCreateDto, Quiz>().ReverseMap();
+
+
+
 
 
         }

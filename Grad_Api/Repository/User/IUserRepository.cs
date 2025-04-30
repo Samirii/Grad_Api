@@ -6,5 +6,7 @@ namespace Grad_Api.Repository.User
     {
         Task<List<UserReadDto>> GetAllUsersAsync();
         Task<UserReadDto?> GetUserByIdAsync(string id);
+   
+      
     }
 }

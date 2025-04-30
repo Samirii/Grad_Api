@@ -10,10 +10,8 @@ public partial class Quiz
 
     public string? Title { get; set; }
 
-    [Required]
-    public int LessonId { get; set; }
-
-    public virtual Lesson? Lesson { get; set; }
+    
+ 
 
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
     public virtual ICollection<QuizScore> QuizScores { get; set; } = new List<QuizScore>();

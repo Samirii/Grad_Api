@@ -10,8 +10,10 @@ namespace Grad_Api.Data
        
         public int? SubjectId { get; set; }
         public Subject? Subject { get; set; }
+        public string? CvFilePath { get; set; }
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public virtual ICollection<QuizScore> QuizScores { get; set; } = new List<QuizScore>();
+
 
 
     }

@@ -1,5 +1,6 @@
 using Grad_Api.Data;
 using Grad_Api.Models;
+using Grad_Api.Models.Quiz;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -15,24 +16,29 @@ namespace Grad_Api.Repository
             _context = context;
         }
 
-        public async Task<Quiz> GetQuizByLessonIdAsync(int lessonId)
-        {
-            return await _context.Quizzes
-                .FirstOrDefaultAsync(q => q.LessonId == lessonId);
-        }
+      
 
-        public async Task<Quiz> GetQuizWithQuestionsByLessonIdAsync(int lessonId)
-        {
-            return await _context.Quizzes
-                .Include(q => q.Questions)
-                .FirstOrDefaultAsync(q => q.LessonId == lessonId);
-        }
 
         public async Task<Quiz> AddQuizAsync(Quiz quiz)
         {
-            _context.Quizzes.Add(quiz);
-            await _context.SaveChangesAsync();
-            return quiz;
+            try
+            {
+                // Enable IDENTITY_INSERT
+                await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Quiz ON");
+
+                // Add the quiz to the database
+                await _context.Quizzes.AddAsync(quiz);
+                await _context.SaveChangesAsync();
+
+                // Disable IDENTITY_INSERT
+                await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Quiz OFF");
+
+                return quiz;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error adding quiz.", ex);
+            }
         }
 
         public async Task AddQuestionsAsync(IEnumerable<Question> questions)
@@ -99,6 +105,44 @@ namespace Grad_Api.Repository
             }
         }
 
-       
-    }
+        public async Task<Quiz> GetQuizByQuizIdAsync(int quizId)
+        {
+            try
+            {
+                return await _context.Quizzes.FirstOrDefaultAsync(q => q.Id == quizId);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error retrieving quiz scores for student.", ex);
+            }
+        }
+        public async Task<List<Question>> GetQuestionsByUnitAndCategoryAsync(int unitNumber, string courseName, string categoryName)
+        {
+            var questions = await _context.Questions
+            .Where(q => q.CourseCategory.Trim().ToLower() == categoryName.Trim().ToLower() &&
+                        q.UnitNumber == unitNumber &&
+                        q.Subject.Trim().ToLower() == courseName.Trim().ToLower())
+            .Select(q => new Question
+            {
+                Id = q.Id,
+                QuestionText = q.QuestionText,
+                OptionA = q.OptionA,
+                OptionB = q.OptionB,
+                OptionC = q.OptionC,
+                OptionD = q.OptionD,
+                CorrectAnswer = q.CorrectAnswer,
+                Defficulty = q.Defficulty,
+                Subject = q.Subject,
+                CourseCategory = q.CourseCategory,
+                UnitNumber = q.UnitNumber,
+                
+                
+            })
+            .ToListAsync();
+
+            return questions;
+        }
+    
+}
+    
 }
