@@ -1,5 +1,6 @@
 ﻿using Grad_Api.Models.Quiz;
 using Grad_Api.Services;
+using Grad_Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -196,6 +197,51 @@ namespace Grad_Api.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        }
+        [HttpGet("from-csv")]
+        public IActionResult GetQuestionsFromCsv()
+        {
+            string csvFilePath = "path/to/final_Merged_Questions_Consolidated.csv";
+
+            var questionService = new QuestionService();
+            var questions = questionService.ReadQuestionsFromCsv(csvFilePath);
+
+            return Ok(questions);
+        }
+        [HttpGet("questions")]
+        public IActionResult GetQuestionsByFilters(
+    [FromQuery] string subjectName,
+    [FromQuery] int unitNumber,
+    [FromQuery] string prepLevel
+      )
+            
+        {
+            // Validation
+            if (string.IsNullOrWhiteSpace(subjectName))
+            {
+                return BadRequest("Subject name is required.");
+            }
+            if (unitNumber <= 0)
+            {
+                return BadRequest("Unit number must be a positive integer.");
+            }
+           
+
+            // Read CSV data
+            string csvFilePath = "path/to/final_Merged_Questions_Consolidated.csv";
+            var questionService = new QuestionService();
+            var allQuestions = questionService.ReadQuestionsFromCsv(csvFilePath);
+
+            // Filter questions
+            var filteredQuestions = allQuestions
+                .Where(q =>
+                    q.Subject.Equals(subjectName, StringComparison.OrdinalIgnoreCase) &&
+                    q.UnitNumber == unitNumber &&
+                    q.CourseCategory == prepLevel
+                    )
+                .ToList();
+
+            return Ok(filteredQuestions);
         }
     }
 }
