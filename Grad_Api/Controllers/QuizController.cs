@@ -70,25 +70,7 @@ namespace Grad_Api.Controllers
             }
         }
 
-        [HttpGet("{quizId}/questions")]
-        public async Task<IActionResult> GetQuestionsByQuizId(int quizId)
-        {
-            try
-            {
-                var questions = await _quizService.GetQuestionsByQuizIdAsync(quizId);
-
-                if (questions == null || !questions.Any())
-                {
-                    return NotFound($"No questions found for QuizId {quizId}");
-                }
-
-                return Ok(questions);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while processing your request.");
-            }
-        }
+    
 
         [HttpGet("lesson/{lessonId}")]
         public async Task<IActionResult> GetQuizByLessonId(int lessonId)
@@ -212,36 +194,59 @@ namespace Grad_Api.Controllers
         public IActionResult GetQuestionsByFilters(
     [FromQuery] string subjectName,
     [FromQuery] int unitNumber,
-    [FromQuery] string prepLevel
+    [FromQuery] string prepLevel,
+             [FromQuery] int count = 10
       )
             
         {
-            // Validation
-            if (string.IsNullOrWhiteSpace(subjectName))
+            try
             {
-                return BadRequest("Subject name is required.");
-            }
-            if (unitNumber <= 0)
-            {
-                return BadRequest("Unit number must be a positive integer.");
-            }
-           
 
-            // Read CSV data
-            string csvFilePath = "path/to/final_Merged_Questions_Consolidated.csv";
-            var questionService = new QuestionService();
-            var allQuestions = questionService.ReadQuestionsFromCsv(csvFilePath);
 
-            // Filter questions
-            var filteredQuestions = allQuestions
-                .Where(q =>
-                    q.Subject.Equals(subjectName, StringComparison.OrdinalIgnoreCase) &&
-                    q.UnitNumber == unitNumber &&
-                    q.CourseCategory == prepLevel
-                    )
+                // Validation
+                if (string.IsNullOrWhiteSpace(subjectName))
+                {
+                    return BadRequest("Subject name is required.");
+                }
+                if (unitNumber <= 0)
+                {
+                    return BadRequest("Unit number must be a positive integer.");
+                }
+                if (count <= 0 || count > 100) // Limit to a maximum of 100 questions
+                {
+                    return BadRequest("Invalid count value. Count must be between 1 and 100.");
+                }
+                var normalizedSubject = subjectName.Replace(" ", "").ToLowerInvariant();
+
+                
+
+                // Read CSV data
+                string csvFilePath = "path/to/final_Merged_Questions_Consolidated.csv";
+                var questionService = new QuestionService();
+                var allQuestions = questionService.ReadQuestionsFromCsv(csvFilePath);
+
+                // Filter questions
+                var filteredQuestions = allQuestions
+                    .Where(q =>
+                        q.Subject.Replace(" ", "").ToLowerInvariant() == normalizedSubject &&
+                        q.UnitNumber == unitNumber &&
+                        q.CourseCategory.Replace(" ", "").ToLowerInvariant() == prepLevel
+                        )
+                    .ToList();
+                if (filteredQuestions.Count == 0)
+                    return NotFound("No questions found matching the criteria.");
+                var random = new Random();
+                var randomQuestions = filteredQuestions
+                .OrderBy(q => random.Next()) 
+                .Take(10)                     
                 .ToList();
 
-            return Ok(filteredQuestions);
+                return Ok(randomQuestions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }

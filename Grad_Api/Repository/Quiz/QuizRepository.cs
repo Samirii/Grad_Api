@@ -23,21 +23,24 @@ namespace Grad_Api.Repository
         {
             try
             {
-                // Enable IDENTITY_INSERT
-                await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Quiz ON");
+                // Validate that the LessonId exists in the Lesson table
+                var lessonExists = await _context.Lessons.AnyAsync(l => l.Id == quiz.LessonId);
+                if (!lessonExists)
+                {
+                    throw new InvalidOperationException($"LessonId {quiz.LessonId} does not exist in the Lesson table. Cannot create a Quiz without a valid Lesson.");
+                }
 
                 // Add the quiz to the database
                 await _context.Quizzes.AddAsync(quiz);
                 await _context.SaveChangesAsync();
 
-                // Disable IDENTITY_INSERT
-                await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Quiz OFF");
-
                 return quiz;
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Error adding quiz.", ex);
+
+                
+                throw new InvalidOperationException("Error adding quiz. Please ensure the LessonId exists in the database.", ex);
             }
         }
 
@@ -142,7 +145,14 @@ namespace Grad_Api.Repository
 
             return questions;
         }
-    
-}
+
+        public async Task<Quiz> GetQuizWithQuestionsByLessonIdAsync(int lessonId)
+        {
+            var quizes = await _context.Quizzes.
+                Include(q=>q.Questions)
+                .FirstOrDefaultAsync(q=>q.LessonId==lessonId);
+            return quizes; 
+        }
+    }
     
 }

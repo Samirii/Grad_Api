@@ -26,77 +26,77 @@ namespace Grad_Api.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Grad_Api.Data.Question>> GetQuestionsByQuizIdAsync(int quizId)
+  
+
+        public async Task<Quiz> GetQuizWithQuestionsByLessonIdAsync(int lessonId)
         {
             try
             {
-                _logger.LogInformation("Retrieving questions for quiz ID: {QuizId}", quizId);
-                var questions = await _quizRepository.GetQuestionsByQuizIdAsync(quizId);
-                _logger.LogInformation("Successfully retrieved {Count} questions for quiz ID: {QuizId}", questions.Count(), quizId);
-                return questions;
+                _logger.LogInformation("Retrieving quiz with questions for lesson ID: {LessonId}", lessonId);
+                var quiz = await _quizRepository.GetQuizWithQuestionsByLessonIdAsync(lessonId);
+                _logger.LogInformation("Successfully retrieved quiz with {Count} questions for lesson ID: {LessonId}",
+                    quiz?.Questions?.Count ?? 0, lessonId);
+                return quiz;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving questions for quiz ID: {QuizId}", quizId);
+                _logger.LogError(ex, "Error retrieving quiz with questions for lesson ID: {LessonId}", lessonId);
                 throw;
             }
         }
-
-        //public async Task<Quiz> GetQuizWithQuestionsByLessonIdAsync(int lessonId)
-        //{
-        //    try
-        //    {
-        //        _logger.LogInformation("Retrieving quiz with questions for lesson ID: {LessonId}", lessonId);
-        //        var quiz = await _quizRepository.GetQuizWithQuestionsByLessonIdAsync(lessonId);
-        //        _logger.LogInformation("Successfully retrieved quiz with {Count} questions for lesson ID: {LessonId}", 
-        //            quiz?.Questions?.Count ?? 0, lessonId);
-        //        return quiz;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error retrieving quiz with questions for lesson ID: {LessonId}", lessonId);
-        //        throw;
-        //    }
-        //}
 
         public async Task ImportQuestionsFromExcelAsync(string filePath)
         {
             try
             {
                 _logger.LogInformation("Starting import of questions from Excel file: {FilePath}", filePath);
+
+                // Read questions from the Excel file
                 var excelQuestions = ReadQuestionsFromExcel(filePath);
                 _logger.LogInformation("Successfully read {Count} questions from Excel file", excelQuestions.Count);
 
                 var groupedQuestions = excelQuestions
-                    .GroupBy(q => q.QuizId)
+                    .GroupBy(q => q.LessonId)
                     .ToList();
 
                 foreach (var group in groupedQuestions)
                 {
-                    var quizId = group.Key;
-                    _logger.LogInformation("Processing questions for quiz ID: {QuizId}", quizId);
+                    var lessonId = group.Key;
 
-                    var existingQuiz = await _quizRepository.GetQuizByQuizIdAsync(quizId);
+                    // Check if a Quiz already exists for this LessonId
+                    var existingQuiz = await _quizRepository.GetQuizByQuizIdAsync(lessonId);
 
                     Quiz quiz;
                     if (existingQuiz == null)
                     {
-                        _logger.LogInformation("Creating new quiz with ID: {QuizId}", quizId);
+                        // Create a new Quiz
                         quiz = new Quiz
                         {
-                            
-                            Title = $"Quiz for QuizId {quizId}"
+                            Title = $"Quiz for LessonId {lessonId}",
+                            LessonId = lessonId
                         };
-                        quiz = await _quizRepository.AddQuizAsync(quiz);
-                        _logger.LogInformation("Successfully created new quiz with ID: {QuizId}", quizId);
+
+                        try
+                        {
+                            // Add the Quiz to the database
+                            quiz = await _quizRepository.AddQuizAsync(quiz);
+                            _logger.LogInformation("Successfully created new quiz with LessonId: {LessonId}", lessonId);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            _logger.LogError(ex, "Skipping quiz creation for invalid LessonId: {LessonId}", lessonId);
+                            continue; // Skip invalid LessonId
+                        }
                     }
                     else
                     {
-                        _logger.LogInformation("Using existing quiz with ID: {QuizId}", quizId);
+                        // Use the existing Quiz
                         quiz = existingQuiz;
+                        _logger.LogInformation("Using existing quiz with LessonId: {LessonId}", lessonId);
                     }
 
-                    var questions = group.Select(eq => new Grad_Api.Data.Question
+                    // Map Excel questions to database questions
+                    var questions = group.Select(eq => new Question
                     {
                         QuestionText = eq.QuestionTitle,
                         OptionA = eq.OptionA,
@@ -108,13 +108,12 @@ namespace Grad_Api.Services
                         Subject = eq.Subject,
                         CourseCategory = eq.CourseCategory,
                         UnitNumber = eq.UnitNumber,
-                        QuizId = quiz.Id,
-
+                        QuizId = quiz.Id
                     }).ToList();
 
-                    _logger.LogInformation("Adding {Count} questions to quiz ID: {QuizId}", questions.Count, quizId);
+                    // Add the questions to the database
                     await _quizRepository.AddQuestionsAsync(questions);
-                    _logger.LogInformation("Successfully added questions to quiz ID: {QuizId}", quizId);
+                    _logger.LogInformation("Successfully added {Count} questions to quiz with LessonId: {LessonId}", questions.Count, lessonId);
                 }
             }
             catch (Exception ex)
@@ -130,20 +129,33 @@ namespace Grad_Api.Services
             {
                 _logger.LogInformation("Reading questions from Excel file: {FilePath}", filePath);
                 var questions = new List<ExcelQuestion>();
+
                 using (var workbook = new XLWorkbook(filePath))
                 {
                     var worksheet = workbook.Worksheet(1);
-                    foreach (var row in worksheet.RowsUsed().Skip(1))
+
+                    foreach (var row in worksheet.RowsUsed().Skip(1)) // Skip header row
                     {
-                        if (!int.TryParse(row.Cell(11).GetString(), out int quizId))
+                        // Parse LessonId
+                        if (!int.TryParse(row.Cell(11).GetString(), out int lessonId) || lessonId <= 0)
                         {
-                            throw new InvalidOperationException($"Invalid QuizId in row {row.RowNumber()}. Value: '{row.Cell(11).GetString()}'");
+                            _logger.LogWarning("Invalid LessonId in row {RowNumber}. Value: '{CellValue}'. Skipping this row.", row.RowNumber(), row.Cell(11).GetString());
+                            continue; // Skip invalid rows
                         }
+
+                        // Validate other required fields
+                        var questionTitle = row.Cell(1).GetString()?.Trim();
+                        if (string.IsNullOrWhiteSpace(questionTitle))
+                        {
+                            _logger.LogWarning("Missing or empty QuestionTitle in row {RowNumber}. Skipping this row.", row.RowNumber());
+                            continue;
+                        }
+
+                        // Add valid rows to the list
                         questions.Add(new ExcelQuestion
                         {
-
-                            QuizId = quizId,
-                            QuestionTitle = row.Cell(1).GetString()?.Trim(),
+                            LessonId = lessonId,
+                            QuestionTitle = questionTitle,
                             OptionA = row.Cell(2).GetString()?.Trim(),
                             OptionB = row.Cell(3).GetString()?.Trim(),
                             OptionC = row.Cell(4).GetString()?.Trim(),
@@ -152,11 +164,12 @@ namespace Grad_Api.Services
                             Defficulty = row.Cell(7).GetString()?.Trim(),
                             Subject = row.Cell(8).GetString()?.Trim(),
                             CourseCategory = row.Cell(9).GetString()?.Trim(),
-                            UnitNumber = int.Parse(row.Cell(10).GetString())
+                            UnitNumber = int.TryParse(row.Cell(10).GetString(), out int unitNumber) ? unitNumber : 0 // Default to 0 if invalid
                         });
                     }
                 }
-                _logger.LogInformation("Successfully read {Count} questions from Excel file", questions.Count);
+
+                _logger.LogInformation("Successfully read {Count} valid questions from Excel file", questions.Count);
                 return questions;
             }
             catch (Exception ex)
@@ -165,6 +178,7 @@ namespace Grad_Api.Services
                 throw;
             }
         }
+        
 
         public async Task<List<Grad_Api.Data.Question>> GetRandomQuestionsForQuizAsync(int quizId, int count)
         {
@@ -298,11 +312,7 @@ namespace Grad_Api.Services
 
       
 
-        public Task<Quiz> GetQuizWithQuestionsByLessonIdAsync(int lessonId)
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public async Task<List<Question>> GetQuestionsByUnitAndCategoryAsync(int unitNumber, string courseName, string categoryName)
         {
             _logger.LogInformation("Retrieving Questions  for Unit Number: {unitNumber}");

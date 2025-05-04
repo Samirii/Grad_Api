@@ -19,6 +19,7 @@ public partial class Lesson
     public int CourseId { get; set; }
   
     public virtual Course Course { get; set; } = null!;
+    public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
 
 
 

@@ -9,14 +9,24 @@ namespace Grad_Api.Services
     {
         public List<Question> ReadQuestionsFromCsv(string filePath)
         {
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            try
+            {
+                using var reader = new StreamReader(filePath);
+                using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-            // Map CSV columns to the Question model
-            csv.Context.RegisterClassMap<QuestionMap>();
-            return csv.GetRecords<Question>().ToList();
+                // Map CSV columns to the Question model
+                csv.Context.RegisterClassMap<QuestionMap>();
+                return csv.GetRecords<Question>().ToList();
+            }
+            catch (Exception ex)
+            {
+               
+                throw new InvalidOperationException("Error retrieving random questions.", ex);
+            }
         }
     }
+      
+            
     public class QuestionMap : ClassMap<Question>
     {
         public QuestionMap()

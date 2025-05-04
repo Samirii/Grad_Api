@@ -6,6 +6,7 @@ namespace Grad_Api.Repository
 {
     public interface IQuizRepository
     {
+        Task<Quiz> GetQuizWithQuestionsByLessonIdAsync(int lessonId);
         Task<Quiz> GetQuizByQuizIdAsync(int quizId);
         Task<Quiz> AddQuizAsync(Quiz quiz);
         Task AddQuestionsAsync(IEnumerable<Question> questions);

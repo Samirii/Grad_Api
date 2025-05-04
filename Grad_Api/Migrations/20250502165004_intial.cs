@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Grad_Api.Migrations
 {
     /// <inheritdoc />
-    public partial class edit : Migration
+    public partial class intial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,19 +36,6 @@ namespace Grad_Api.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CourseCategory", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Quiz",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__Quiz__3214EC0747465A37", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -108,34 +95,6 @@ namespace Grad_Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Question",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    QuestionText = table.Column<string>(name: "QuestionText ", type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    OptionA = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OptionB = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OptionC = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OptionD = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CorrectAnswer = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Defficulty = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Subject = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CourseCategory = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UnitNumber = table.Column<int>(type: "int", nullable: false),
-                    QuizId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__Question__3214EC079DB2C3F8", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Question_ToTable",
-                        column: x => x.QuizId,
-                        principalTable: "Quiz",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
@@ -143,6 +102,7 @@ namespace Grad_Api.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubjectId = table.Column<int>(type: "int", nullable: true),
+                    CvFilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -302,6 +262,60 @@ namespace Grad_Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Quiz",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    LessonId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__Quiz__3214EC0747465A37", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Quiz_Lesson_LessonId",
+                        column: x => x.LessonId,
+                        principalTable: "Lesson",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Question",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    QuestionText = table.Column<string>(name: "QuestionText ", type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    OptionA = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OptionB = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OptionC = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OptionD = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CorrectAnswer = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Defficulty = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Subject = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CourseCategory = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UnitNumber = table.Column<int>(type: "int", nullable: false),
+                    QuizId = table.Column<int>(type: "int", nullable: true),
+                    LessonId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__Question__3214EC079DB2C3F8", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Question_Lesson_LessonId",
+                        column: x => x.LessonId,
+                        principalTable: "Lesson",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Question_ToTable",
+                        column: x => x.QuizId,
+                        principalTable: "Quiz",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "QuizScores",
                 columns: table => new
                 {
@@ -393,9 +407,19 @@ namespace Grad_Api.Migrations
                 column: "CourseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Question_LessonId",
+                table: "Question",
+                column: "LessonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Question_QuizId",
                 table: "Question",
                 column: "QuizId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Quiz_LessonId",
+                table: "Quiz",
+                column: "LessonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuizScores_QuizId",
@@ -430,9 +454,6 @@ namespace Grad_Api.Migrations
                 name: "Enrollment");
 
             migrationBuilder.DropTable(
-                name: "Lesson");
-
-            migrationBuilder.DropTable(
                 name: "Question");
 
             migrationBuilder.DropTable(
@@ -442,19 +463,22 @@ namespace Grad_Api.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Course");
-
-            migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Quiz");
 
             migrationBuilder.DropTable(
-                name: "CourseCategory");
+                name: "Subjects");
 
             migrationBuilder.DropTable(
-                name: "Subjects");
+                name: "Lesson");
+
+            migrationBuilder.DropTable(
+                name: "Course");
+
+            migrationBuilder.DropTable(
+                name: "CourseCategory");
         }
     }
 }

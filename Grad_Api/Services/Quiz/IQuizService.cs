@@ -6,8 +6,7 @@ namespace Grad_Api.Services
     public interface IQuizService
     {
         
-        Task ImportQuestionsFromExcelAsync(string filePath);
-        Task<IEnumerable<Grad_Api.Data.Question>> GetQuestionsByQuizIdAsync(int quizId);
+        Task ImportQuestionsFromExcelAsync(string filePath);        
         Task<Quiz> GetQuizWithQuestionsByLessonIdAsync(int lessonId);
         Task<List<Grad_Api.Data.Question>> GetRandomQuestionsForQuizAsync(int quizId, int count);
         Task<ScoreResponseDto> CalculateAndSaveScoreAsync(string studentId, SubmitAnswersDto submitAnswersDto);
