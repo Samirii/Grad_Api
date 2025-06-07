@@ -15,6 +15,9 @@ namespace Grad_Api.Repository
         Task SaveQuizScoreAsync(QuizScore quizScore);
         Task<List<QuizScore>> GetQuizScoresForStudentAsync(string studentId);
         Task<List<Question>> GetQuestionsByUnitAndCategoryAsync(int unitNumber, string courseName, string categoryName);
+        Task<QuizScore?> GetQuizScoreAsync(string studentId, int lessonId);
+        Task<List<QuizScore>> GetAllQuizScores(); 
+
 
 
 

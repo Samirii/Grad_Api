@@ -15,5 +15,5 @@ public partial class Quiz
  
 
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
-    public virtual ICollection<QuizScore> QuizScores { get; set; } = new List<QuizScore>();
+
 }

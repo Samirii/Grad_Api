@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -31,8 +31,10 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
     public virtual DbSet<Subject> Subjects { get; set; }
     public virtual DbSet<Enrollment> Enrollments { get; set; }
+   
 
-    
+
+
 
 
 
@@ -40,7 +42,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating( modelBuilder);
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<ApiUser>().ToTable("AspNetUsers");
 
 
@@ -55,7 +57,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
             entity.HasOne(c => c.Category)
                   .WithMany(c => c.Courses)
                   .HasForeignKey(c => c.CourseCategoryId)
-                  .OnDelete(DeleteBehavior.Restrict);
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
 
@@ -114,7 +116,7 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
                  .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Lesson_ToTable");
 
-           
+
 
         });
 
@@ -145,13 +147,26 @@ public partial class GradProjDbContext : IdentityDbContext<ApiUser>
                 .HasMaxLength(50)
                 .HasColumnName("Title");
 
-          
-
-        
         });
-      
 
- 
+        modelBuilder.Entity<QuizScore>(entity =>
+        {
+            entity.ToTable("QuizScores");
+
+            entity.HasKey(qs => qs.Id);
+
+            entity.Property(qs => qs.Score).IsRequired();
+
+            entity.HasOne(qs => qs.Lesson)
+                  .WithMany(l => l.QuizScore)
+                  .HasForeignKey(qs => qs.LessonId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(qs => qs.Student)
+                  .WithMany(s => s.QuizScores)
+                  .HasForeignKey(qs => qs.StudentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
 
         OnModelCreatingPartial(modelBuilder);

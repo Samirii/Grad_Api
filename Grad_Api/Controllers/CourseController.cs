@@ -1,8 +1,9 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Repository;
 using Grad_Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ namespace Grad_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
@@ -44,6 +46,7 @@ namespace Grad_Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles ="Administrator")]
         public async Task<ActionResult<CourseReadDto>> CreateCourse(CourseCreateDto courseDto)
         {
             var course = await _courseService.CreateCourseAsync(courseDto);
@@ -51,6 +54,8 @@ namespace Grad_Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
+
         public async Task<IActionResult> DeleteCourse(int id)
         {
             var course = await _courseService.GetCourseAsync(id);
@@ -58,12 +63,14 @@ namespace Grad_Api.Controllers
             {
                 return NotFound();
             }
-            await _courseService.DeleteCourseAsync(id); 
+            await _courseService.DeleteCourseAsync(id);
 
             return NoContent();
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administrator")]
+
         public async Task<IActionResult> UpdateCourse(int id, CourseUpdateDto courseDto)
         {
             if (id != courseDto.Id)
@@ -105,7 +112,7 @@ namespace Grad_Api.Controllers
         private async Task<bool> CourseExiste(int id)
         {
             return await _courseService.Exists(id);
-           
+
         }
     }
 }

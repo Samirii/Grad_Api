@@ -1,10 +1,8 @@
-﻿using BookStoreAPI.Confeguration;
+
 using Grad_Api.Data;
 using Grad_Api.Initializers;
 using Grad_Api.Repository;
-using Grad_Api.Repository;
 using Grad_Api.Repository.User;
-using Grad_Api.Services;
 using Grad_Api.Services;
 using Grad_Api.Services.Enrollment;
 using Grad_Api.Services.Lesson;
@@ -18,6 +16,9 @@ using Serilog;
 using System.Text;
 using Grad_Api.Static;
 using Microsoft.OpenApi.Models;
+using Grad_Api.Confeguration;
+using Grad_Api.Services.Performance;
+using Grad_Api.Repository.Performance;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,40 +30,33 @@ builder.Host.UseSerilog((ctx, lc) =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Configure Swagger
+
+builder.Services.AddHttpClient<StudentPerformanceService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5000/"); 
+});
+
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
-    
-    // Add file upload support
-    c.MapType<IFormFile>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "binary"
-    });
+c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
 
-    // Add security definition
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
+// JWT Authentication
+c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+{
+    In = ParameterLocation.Header,
+    Description = "Enter 'Bearer' followed by a space and your token",
+    Name = "Authorization",
+    Type = SecuritySchemeType.ApiKey,
+    Scheme = "Bearer"
+});
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
-            Array.Empty<string>()
+            new string[] {}
         }
     });
 });
@@ -78,6 +72,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IPerformanceRepository, PerformanceRepository>();
+builder.Services.AddScoped<IStudentPerformanceService, StudentPerformanceService>();
+builder.Services.AddHttpClient();
 
 
 builder.Services.AddAuthentication(options =>

@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using BookStoreAPI;
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Models.Lessons;
 using Grad_Api.Models.Quiz;
 using Grad_Api.Models.User;
 
-namespace BookStoreAPI.Confeguration
+namespace Grad_Api.Confeguration
 {
     public class MapperConfeg : Profile
     {

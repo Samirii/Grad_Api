@@ -2,14 +2,14 @@
 {
     public class QuizScore
     {
-        public int id {  get; set; }
+        public int Id {  get; set; }
 
-        public int  QuizId { get; set; }
+        public int  LessonId { get; set; }
 
         public string StudentId { get; set; }
 
         public ApiUser Student { get; set; }
-        public Quiz Quiz { get; set; }
+        public Lesson Lesson { get; set; }
         public int Score { get; set; }
     }
 }

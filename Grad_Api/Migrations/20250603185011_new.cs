@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Grad_Api.Migrations
 {
     /// <inheritdoc />
-    public partial class intial : Migration
+    public partial class @new : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -282,6 +282,33 @@ namespace Grad_Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "QuizScores",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LessonId = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Score = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QuizScores", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_QuizScores_AspNetUsers_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_QuizScores_Lesson_LessonId",
+                        column: x => x.LessonId,
+                        principalTable: "Lesson",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Question",
                 columns: table => new
                 {
@@ -313,33 +340,6 @@ namespace Grad_Api.Migrations
                         column: x => x.QuizId,
                         principalTable: "Quiz",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "QuizScores",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    QuizId = table.Column<int>(type: "int", nullable: false),
-                    StudentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Score = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_QuizScores", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_QuizScores_AspNetUsers_StudentId",
-                        column: x => x.StudentId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_QuizScores_Quiz_QuizId",
-                        column: x => x.QuizId,
-                        principalTable: "Quiz",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -422,9 +422,9 @@ namespace Grad_Api.Migrations
                 column: "LessonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizScores_QuizId",
+                name: "IX_QuizScores_LessonId",
                 table: "QuizScores",
-                column: "QuizId");
+                column: "LessonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuizScores_StudentId",
@@ -463,16 +463,16 @@ namespace Grad_Api.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
                 name: "Quiz");
 
             migrationBuilder.DropTable(
-                name: "Subjects");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Lesson");
+
+            migrationBuilder.DropTable(
+                name: "Subjects");
 
             migrationBuilder.DropTable(
                 name: "Course");

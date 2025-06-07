@@ -4,6 +4,8 @@ using Grad_Api.Models.Course;
 using Grad_Api.Models.Enrollment;
 using Grad_Api.Models.Lessons;
 using Grad_Api.Services.Enrollment;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +13,8 @@ namespace Grad_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    
     public class EnrollmentController : ControllerBase
     {
         private readonly IMapper _mapper;

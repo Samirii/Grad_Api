@@ -20,6 +20,10 @@ public partial class Lesson
   
     public virtual Course Course { get; set; } = null!;
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
+    public virtual ICollection<QuizScore> QuizScore { get; set; } = new List<QuizScore>();
+   
+
+
 
 
 

@@ -1,6 +1,8 @@
 ﻿using Grad_Api.Models.Quiz;
 using Grad_Api.Services;
 using Grad_Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +10,10 @@ namespace Grad_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
+
+
+
     public class QuizController : ControllerBase
     {
         private readonly IQuizService _quizService;
@@ -112,28 +118,28 @@ namespace Grad_Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        [HttpPost("submit-answers")]
-        public async Task<IActionResult> SubmitAnswers([FromBody] SubmitAnswersDto submitAnswersDto, [FromQuery] string studentId)
-        {
-            try
-            {
-                // Validate the input
-                if (submitAnswersDto == null || submitAnswersDto.Answers == null || !submitAnswersDto.Answers.Any())
-                {
-                    return BadRequest("Invalid input. Please provide valid answers.");
-                }
+        //[HttpPost("submit-answers")]
+        //public async Task<IActionResult> SubmitAnswers([FromBody] SubmitAnswersDto submitAnswersDto, [FromQuery] string studentId)
+        //{
+        //    try
+        //    {
+        //        // Validate the input
+        //        if (submitAnswersDto == null || submitAnswersDto.Answers == null || !submitAnswersDto.Answers.Any())
+        //        {
+        //            return BadRequest("Invalid input. Please provide valid answers.");
+        //        }
 
-                // Calculate and save the score
-                var scoreResponse = await _quizService.CalculateAndSaveScoreAsync(studentId, submitAnswersDto);
+        //        // Calculate and save the score
+        //        var scoreResponse = await _quizService.CalculateAndSaveScoreAsync(studentId, submitAnswersDto);
 
-                // Return the score
-                return Ok(scoreResponse);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
+        //        // Return the score
+        //        return Ok(scoreResponse);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Internal server error: {ex.Message}");
+        //    }
+        //}
         [HttpGet("scores/{studentId}")]
         public async Task<IActionResult> GetQuizScoresForStudent(string studentId)
         {
@@ -162,17 +168,13 @@ namespace Grad_Api.Controllers
                     return BadRequest("Student ID is required");
                 }
 
-                if (scoreDto.QuizId <= 0)
-                {
-                    return BadRequest("Valid Quiz ID is required");
-                }
 
                 if (scoreDto.Score < 0 || scoreDto.Score > 100)
                 {
                     return BadRequest("Score must be between 0 and 100");
                 }
 
-                var result = await _quizService.SendScoreAsync(scoreDto.StudentId, scoreDto.QuizId, scoreDto.Score);
+                var result = await _quizService.SendScoreAsync(scoreDto);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -247,6 +249,13 @@ namespace Grad_Api.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        }
+        [HttpGet("all")]
+       public async Task<IActionResult> GetAllQuizzesScore()
+        {
+            var scores = await _quizService.GetAllQuizScoresAsync();
+            return Ok(scores);
+
         }
     }
 }

@@ -56,7 +56,6 @@ namespace Grad_Api.Repository
                 .Where(q => q.QuizId == quizId)
                 .ToListAsync();
         }
-
         public async Task<List<Question>> GetRandomQuestionsForQuizAsync(int quizId, int count)
         {
             var allQuestions = await _context.Questions
@@ -76,7 +75,6 @@ namespace Grad_Api.Repository
 
             return randomQuestions;
         }
-
         public async Task SaveQuizScoreAsync(QuizScore quizScore)
         {
             try
@@ -96,7 +94,7 @@ namespace Grad_Api.Repository
             try
             {
                 return await _context.QuizScores
-                .Include(qs => qs.Quiz)
+
                 .Where(qs => qs.StudentId == studentId)
                 .ToListAsync();
             }
@@ -152,6 +150,18 @@ namespace Grad_Api.Repository
                 Include(q=>q.Questions)
                 .FirstOrDefaultAsync(q=>q.LessonId==lessonId);
             return quizes; 
+        }
+
+        public async Task<QuizScore?> GetQuizScoreAsync(string studentId, int lessonId)
+        {
+            return await _context.QuizScores.FirstOrDefaultAsync(q=>q.StudentId==studentId && q.LessonId == lessonId);    
+        }
+
+        public async Task<List<QuizScore>> GetAllQuizScores()
+        {
+            return await _context.QuizScores.Include(q=>q.Student)
+                .Include(q=>q.Lesson)
+                .ToListAsync();
         }
     }
     

@@ -3,6 +3,8 @@ using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Models.Lessons;
 using Grad_Api.Services.Lesson;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ namespace Grad_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class LessonController : ControllerBase
     {
         private readonly ILessonService _lessonService;
@@ -67,6 +70,8 @@ namespace Grad_Api.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
+
         public async Task<ActionResult<ReadLessonDto>> CreateLesson(CreateLessonDto lessonDto)
         {
             try
@@ -116,7 +121,10 @@ namespace Grad_Api.Controllers
             }
         }
 
+
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
+
         public async Task<IActionResult> DeleteLesson(int id)
         {
             var lesson = await _lessonService.GetLessonAsync(id);
@@ -132,6 +140,7 @@ namespace Grad_Api.Controllers
         }
 
         [HttpGet("by-course/{courseId}")]
+
         public async Task<ActionResult<IEnumerable<ReadLessonDto>>> GetLessonsByCourseId(int courseId)
         {
             try

@@ -1,5 +1,6 @@
 using Grad_Api.Models.User;
 using Grad_Api.Services.User;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,11 @@ namespace Grad_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-  
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [AllowAnonymous]
+
+
+
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Grad_Api.Migrations
 {
     [DbContext(typeof(GradProjDbContext))]
-    [Migration("20250502165004_intial")]
-    partial class intial
+    [Migration("20250604105026_delete")]
+    partial class delete
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -298,13 +298,13 @@ namespace Grad_Api.Migrations
 
             modelBuilder.Entity("Grad_Api.Data.QuizScore", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("QuizId")
+                    b.Property<int>("LessonId")
                         .HasColumnType("int");
 
                     b.Property<int>("Score")
@@ -314,13 +314,13 @@ namespace Grad_Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("QuizId");
+                    b.HasIndex("LessonId");
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("QuizScores");
+                    b.ToTable("QuizScores", (string)null);
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Subject", b =>
@@ -487,7 +487,7 @@ namespace Grad_Api.Migrations
                     b.HasOne("Grad_Api.Data.CourseCategory", "Category")
                         .WithMany("Courses")
                         .HasForeignKey("CourseCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -551,9 +551,9 @@ namespace Grad_Api.Migrations
 
             modelBuilder.Entity("Grad_Api.Data.QuizScore", b =>
                 {
-                    b.HasOne("Grad_Api.Data.Quiz", "Quiz")
-                        .WithMany("QuizScores")
-                        .HasForeignKey("QuizId")
+                    b.HasOne("Grad_Api.Data.Lesson", "Lesson")
+                        .WithMany("QuizScore")
+                        .HasForeignKey("LessonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -563,7 +563,7 @@ namespace Grad_Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Quiz");
+                    b.Navigation("Lesson");
 
                     b.Navigation("Student");
                 });
@@ -641,13 +641,13 @@ namespace Grad_Api.Migrations
             modelBuilder.Entity("Grad_Api.Data.Lesson", b =>
                 {
                     b.Navigation("Questions");
+
+                    b.Navigation("QuizScore");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Quiz", b =>
                 {
                     b.Navigation("Questions");
-
-                    b.Navigation("QuizScores");
                 });
 
             modelBuilder.Entity("Grad_Api.Data.Subject", b =>

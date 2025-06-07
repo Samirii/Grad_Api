@@ -1,4 +1,4 @@
-﻿namespace BookStoreAPI.Models.User
+﻿namespace Grad_Api.Models.User
 {
     public class AuthResponse
     {

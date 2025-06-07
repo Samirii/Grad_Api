@@ -3,7 +3,7 @@ using Grad_Api.Data;
 using Grad_Api.Repositores;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookStoreAPI.Repositores
+namespace Grad_Api.Repositores
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using BookStoreAPI.Repositores;
+using Grad_Api.Repositores;
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Models.Lessons;

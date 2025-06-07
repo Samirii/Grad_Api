@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using BookStoreAPI.Models.User;
-using BookStoreAPI.Static;
+using Grad_Api.Models.User;
+using Grad_Api.Static;
 using Grad_Api.Data;
 using Grad_Api.Models.User;
 using Microsoft.AspNetCore.Http;

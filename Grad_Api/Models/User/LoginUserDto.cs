@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-namespace BookStoreAPI.Models.User
+namespace Grad_Api.Models.User
 {
     public class LoginUserDto
     {

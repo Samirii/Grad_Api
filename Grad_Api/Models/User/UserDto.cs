@@ -1,4 +1,4 @@
-﻿using BookStoreAPI.Models.User;
+﻿using Grad_Api.Models.User;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;

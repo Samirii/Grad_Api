@@ -197,62 +197,62 @@ namespace Grad_Api.Services
             }
         }
 
-        public async Task<ScoreResponseDto> CalculateAndSaveScoreAsync(string studentId, SubmitAnswersDto submitAnswersDto)
-        {
-            try
-            {
-                _logger.LogInformation("Calculating score for student ID: {StudentId}, quiz ID: {QuizId}", 
-                    studentId, submitAnswersDto.QuizId);
+        //public async Task<ScoreResponseDto> CalculateAndSaveScoreAsync(string studentId, SubmitAnswersDto submitAnswersDto)
+        //{
+        //    try
+        //    {
+        //        _logger.LogInformation("Calculating score for student ID: {StudentId}, quiz ID: {QuizId}", 
+        //            studentId, submitAnswersDto.QuizId);
 
-                var questions = await _quizRepository.GetQuestionsByQuizIdAsync(submitAnswersDto.QuizId);
+        //        var questions = await _quizRepository.GetQuestionsByQuizIdAsync(submitAnswersDto.QuizId);
 
-                if (questions == null || !questions.Any())
-                {
-                    _logger.LogWarning("No questions found for quiz ID: {QuizId}", submitAnswersDto.QuizId);
-                    throw new InvalidOperationException("No questions found for the specified quiz.");
-                }
+        //        if (questions == null || !questions.Any())
+        //        {
+        //            _logger.LogWarning("No questions found for quiz ID: {QuizId}", submitAnswersDto.QuizId);
+        //            throw new InvalidOperationException("No questions found for the specified quiz.");
+        //        }
 
-                int totalQuestions = questions.Count();
-                int correctAnswers = 0;
+        //        int totalQuestions = questions.Count();
+        //        int correctAnswers = 0;
 
-                foreach (var submittedAnswer in submitAnswersDto.Answers)
-                {
-                    var question = questions.FirstOrDefault(q => q.Id == submittedAnswer.QuestionId);
-                    if (question != null && question.CorrectAnswer.Equals(submittedAnswer.SelectedAnswer, StringComparison.OrdinalIgnoreCase))
-                    {
-                        correctAnswers++;
-                    }
-                }
+        //        foreach (var submittedAnswer in submitAnswersDto.Answers)
+        //        {
+        //            var question = questions.FirstOrDefault(q => q.Id == submittedAnswer.QuestionId);
+        //            if (question != null && question.CorrectAnswer.Equals(submittedAnswer.SelectedAnswer, StringComparison.OrdinalIgnoreCase))
+        //            {
+        //                correctAnswers++;
+        //            }
+        //        }
 
-                int score = (int)((double)correctAnswers / totalQuestions * 100);
-                _logger.LogInformation("Score calculated: {Score}% for student ID: {StudentId}, quiz ID: {QuizId}", 
-                    score, studentId, submitAnswersDto.QuizId);
+        //        int score = (int)((double)correctAnswers / totalQuestions * 100);
+        //        _logger.LogInformation("Score calculated: {Score}% for student ID: {StudentId}, quiz ID: {QuizId}", 
+        //            score, studentId, submitAnswersDto.QuizId);
 
-                var quizScore = new QuizScore
-                {
-                    StudentId = studentId,
-                    QuizId = submitAnswersDto.QuizId,
-                    Score = score
-                };
+        //        var quizScore = new QuizScore
+        //        {
+        //            StudentId = studentId,
+        //            LessonId = submitAnswersDto.less,
+        //            Score = score
+        //        };
 
-                await _quizRepository.SaveQuizScoreAsync(quizScore);
-                _logger.LogInformation("Score saved successfully for student ID: {StudentId}, quiz ID: {QuizId}", 
-                    studentId, submitAnswersDto.QuizId);
+        //        await _quizRepository.SaveQuizScoreAsync(quizScore);
+        //        _logger.LogInformation("Score saved successfully for student ID: {StudentId}, quiz ID: {QuizId}", 
+        //            studentId, submitAnswersDto.QuizId);
 
-                return new ScoreResponseDto
-                {
-                    TotalQuestions = totalQuestions,
-                    CorrectAnswers = correctAnswers,
-                    Score = score
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error calculating and saving score for student ID: {StudentId}, quiz ID: {QuizId}", 
-                    studentId, submitAnswersDto.QuizId);
-                throw new InvalidOperationException("Error calculating and saving score.", ex);
-            }
-        }
+        //        return new ScoreResponseDto
+        //        {
+        //            TotalQuestions = totalQuestions,
+        //            CorrectAnswers = correctAnswers,
+        //            Score = score
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error calculating and saving score for student ID: {StudentId}, quiz ID: {QuizId}", 
+        //            studentId, submitAnswersDto.QuizId);
+        //        throw new InvalidOperationException("Error calculating and saving score.", ex);
+        //    }
+        //}
 
         public async Task<List<QuizScoreDto>> GetQuizScoresForStudentAsync(string studentId)
         {
@@ -265,7 +265,7 @@ namespace Grad_Api.Services
 
                 return quizScores.Select(qs => new QuizScoreDto
                 {
-                    QuizId = qs.QuizId,
+                    
                     StudentId = studentId,
                     Score = qs.Score,
                 }).ToList();
@@ -277,38 +277,46 @@ namespace Grad_Api.Services
             }
         }
 
-        public async Task<QuizScoreDto> SendScoreAsync(string studentId, int quizId, int score)
+        public async Task<QuizScoreDto> SendScoreAsync(QuizScoreDto quizScoreDto)
         {
             try
             {
-                _logger.LogInformation("Saving quiz score for student ID: {StudentId}, quiz ID: {QuizId}, score: {Score}", 
-                    studentId, quizId, score);
-
+                _logger.LogInformation("Saving quiz score for student ID: {StudentId}, quiz ID: {QuizId}, score: {Score}",
+                    quizScoreDto);
+                var existingScore = await _quizRepository.GetQuizScoreAsync(quizScoreDto.StudentId, quizScoreDto.LessonId);
+                if (existingScore != null)
+                {
+                    _logger.LogWarning("Student {StudentId} has already submitted a quiz for lesson {LessonId}",
+                        quizScoreDto.StudentId, quizScoreDto.LessonId);
+                    throw new InvalidOperationException("You cannot submit the quiz for this lesson again.");
+                }
                 var quizScore = new QuizScore
                 {
-                    StudentId = studentId,
-                    QuizId = quizId,
-                    Score = score
+                    StudentId = quizScoreDto.StudentId,
+                    LessonId = quizScoreDto.LessonId,
+                    Score = quizScoreDto.Score,
                 };
 
                 await _quizRepository.SaveQuizScoreAsync(quizScore);
-                _logger.LogInformation("Successfully saved quiz score for student ID: {StudentId}, quiz ID: {QuizId}", 
-                    studentId, quizId);
+                _logger.LogInformation("Successfully saved quiz score for student ID: {StudentId}, quiz ID: {QuizId}",
+                    quizScoreDto);
 
                 return new QuizScoreDto
                 {
-                    StudentId = studentId,
-                    QuizId = quizId,
-                    Score = score
+                     StudentId = quizScoreDto.StudentId,
+                    LessonId = quizScoreDto.LessonId,
+                    Score = quizScoreDto.Score * 10
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving quiz score for student ID: {StudentId}, quiz ID: {QuizId}", 
-                    studentId, quizId);
+                _logger.LogError(ex, "Error saving quiz score for student ID: {StudentId}, quiz ID: {QuizId}",
+                   quizScoreDto);
                 throw new InvalidOperationException("Error saving quiz score", ex);
             }
         }
+
+
 
       
 
@@ -322,6 +330,22 @@ namespace Grad_Api.Services
             return questions;
 
         }
-       
+
+        public Task<ScoreResponseDto> CalculateAndSaveScoreAsync(string studentId, SubmitAnswersDto submitAnswersDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<QuizScoreDto>> GetAllQuizScoresAsync()
+        {
+            var quizScore =  await _quizRepository.GetAllQuizScores();
+           return quizScore.Select(q => new QuizScoreDto
+            {
+                StudentId = q.StudentId,
+                LessonId = q.LessonId,
+                Score = q.Score
+            }).ToList();
+        }
+
     }
-}
+    }

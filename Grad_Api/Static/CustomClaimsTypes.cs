@@ -1,4 +1,4 @@
-﻿namespace BookStoreAPI.Static
+﻿namespace Grad_Api.Static
 {
     public class CustomClaimsTypes
     {
