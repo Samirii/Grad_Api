@@ -5,6 +5,7 @@ namespace Grad_Api.Services
     public interface ICourseService
     {
         Task<CourseReadDto> CreateCourseAsync(CourseCreateDto courseDto);
+
         Task<List<CourseReadDto>> GetAllCoursesAsync();
         Task<CourseReadDto?> GetCourseAsync(int id);
         Task<List<CourseReadDto>> GetCoursesByCategoryAsync(int categoryId);

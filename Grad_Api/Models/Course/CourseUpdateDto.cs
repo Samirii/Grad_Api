@@ -1,6 +1,6 @@
 ﻿namespace Grad_Api.Models.Course
 {
-    public class CourseUpdateDto : BaseDto
+    public class CourseUpdateDto 
     {
         public string? Title { get; set; }
 

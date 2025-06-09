@@ -13,6 +13,7 @@ namespace Grad_Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
+    [AllowAnonymous]
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
@@ -70,37 +71,13 @@ namespace Grad_Api.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Administrator")]
-
         public async Task<IActionResult> UpdateCourse(int id, CourseUpdateDto courseDto)
         {
-            if (id != courseDto.Id)
-            {
-                return BadRequest();
-            }
-            var course = await _courseService.GetCourseAsync(id);
-            if (course == null)
-            {
-                return NotFound();
-            }
-            _mapper.Map(courseDto, course);
-            try
-            {
-                await _courseService.UpdateCourseAsync(id, courseDto);
-            }
-            catch
-            {
-                if (!await CourseExiste(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            var result = await _courseService.UpdateCourseAsync(id, courseDto);
+            if (!result) return NotFound();
+
             return NoContent();
         }
-
         [HttpGet("category/{categoryId}")]
         public async Task<ActionResult<List<CourseReadDto>>> GetCoursesByCategory(int categoryId)
         {

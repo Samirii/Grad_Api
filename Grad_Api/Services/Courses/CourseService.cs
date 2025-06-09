@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Grad_Api.Data;
 using Grad_Api.Models.Course;
 using Grad_Api.Models.Lessons;
@@ -24,43 +24,7 @@ namespace Grad_Api.Services
             _mapper = mapper;
         }
 
-        public async Task<CourseReadDto> CreateCourseAsync(CourseCreateDto courseDto)
-        {
-            try
-            {
-                _logger.LogInformation("Creating new course: {Title}", courseDto.Title);
-
-                // Check if category exists
-                var category = await _courseRepository.GetCourseCategoryAsync(courseDto.CategoryId);
-                if (category == null)
-                {
-                    _logger.LogWarning("Category not found with ID: {CategoryId}", courseDto.CategoryId);
-                    throw new InvalidOperationException($"Category with ID {courseDto.CategoryId} not found");
-                }
-
-                // Map DTO to Course entity
-                var course = new Course
-                {
-                    Title = courseDto.Title,
-                    Description = courseDto.Description,
-                    TeacherName = courseDto.TeacherName,
-                    CourseCategoryId = category.Id
-                };
-
-                // Create the course using the repository
-                var createdCourse = await _courseRepository.CreateCourseAsync(courseDto);
-                _logger.LogInformation("Course created successfully with ID: {Id}", createdCourse.Id);
-
-                // Return the created course details
-                return await GetCourseAsync(createdCourse.Id) ?? 
-                    throw new InvalidOperationException("Failed to retrieve created course");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating course: {Title}", courseDto.Title);
-                throw;
-            }
-        }
+       
 
         public async Task<List<CourseReadDto>> GetAllCoursesAsync()
         {
@@ -102,40 +66,23 @@ namespace Grad_Api.Services
         {
             try
             {
-                _logger.LogInformation("Retrieving course with ID: {Id}", id);
+                _logger.LogInformation("Service: Getting course with ID: {Id}", id);
+
                 var course = await _courseRepository.GetCourseAsync(id);
-                
+
                 if (course == null)
                 {
-                    _logger.LogWarning("Course not found with ID: {Id}", id);
+                    _logger.LogWarning("Service: Course not found with ID: {Id}", id);
                     return null;
                 }
 
-                var courseDto = new CourseReadDto
-                {
-                    Id = course.Id,
-                    Title = course.Title,
-                    Description = course.Description,
-                    TeacherName = course.TeacherName,
-                    CategoryName = course.CategoryName,
-                    LessonCount = course.Lessons?.Count ?? 0,
-                    
-                    Lessons = course.Lessons?.Select(l => new ReadLessonDto
-                    {
-                        Id = l.Id,
-                        Title = l.Title,
-                        Content = l.Content,
-                        VideoUrl = l.VideoUrl,
-                        CourseId = l.CourseId
-                    }).ToList() ?? new List<ReadLessonDto>()
-                };
-
-                _logger.LogInformation("Course retrieved successfully: {Id}", id);
+                var courseDto = _mapper.Map<CourseReadDto>(course);
+                _logger.LogInformation("Service: Course mapping successful for ID: {Id}", id);
                 return courseDto;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving course with ID: {Id}", id);
+                _logger.LogError(ex, "Service: Error while getting course with ID: {Id}", id);
                 throw;
             }
         }
@@ -213,44 +160,37 @@ namespace Grad_Api.Services
             }
         }
 
-        public async Task<bool> UpdateCourseAsync(int id, CourseUpdateDto courseDto)
+
+        public async Task<bool> UpdateCourseAsync(int id, CourseUpdateDto dto)
         {
             try
             {
-                _logger.LogInformation("Updating course with ID: {Id}", id);
+                _logger.LogInformation("Starting update for Course ID: {Id}", id);
 
-                // Check if course exists
-                var existingCourse = await _courseRepository.GetCourseAsync(id);
-                if (existingCourse == null)
+                var course = await _courseRepository.GetCourseAsync(id);
+                if (course == null)
                 {
-                    _logger.LogWarning("Course not found for update. ID: {Id}", id);
+                    _logger.LogWarning("Course not found for ID: {Id}", id);
                     return false;
                 }
 
-                
-                var course = _mapper.Map<Course>(courseDto);
-                course.Id = id; 
-                
-                var result = await _courseRepository.UpdateCourseAsync(id, courseDto);
+                _mapper.Map(dto, course);  // Maps changes from DTO into entity
 
-                if (result)
-                {
-                    _logger.LogInformation("Course updated successfully. ID: {Id}", id);
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to update course. ID: {Id}", id);
-                }
+                _logger.LogInformation("Mapped successfully, now saving to DB");
 
-                return result;
+                return await _courseRepository.UpdateCourseAsync(id,dto); // Pass entity
+            }
+            catch (AutoMapperMappingException ex)
+            {
+                _logger.LogError(ex, "AutoMapper failed while updating Course ID: {Id}", id);
+                throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating course with ID: {Id}", id);
+                _logger.LogError(ex, "Unexpected error while updating Course ID: {Id}", id);
                 throw;
             }
         }
-
         public async Task<bool> DeleteCourseAsync(int id)
         {
             try
@@ -290,5 +230,41 @@ namespace Grad_Api.Services
           return  await _courseRepository.Exists(id);
         }
 
+        public async Task<CourseReadDto> CreateCourseAsync(CourseCreateDto courseDto)
+        {
+            try
+            {
+                var category = await _courseRepository.GetCategoryByIdAsync(courseDto.CategoryId);
+
+                if (category == null)
+                {
+                    _logger.LogWarning("Category not found. Defaulting to category ID 1.");
+                    category = await _courseRepository.GetCategoryByIdAsync(1);
+                    if (category == null)
+                        throw new InvalidOperationException("Default category not found.");
+                }
+
+                var course = new Course
+                {
+                    Title = courseDto.Title,
+                    Description = courseDto.Description,
+                    TeacherName = courseDto.TeacherName,
+                    CourseCategoryId = category.Id
+                };
+
+                var createdCourse = await _courseRepository.CreateCourseAsync(course);
+                var fullCourse = await _courseRepository.GetCourseAsync(createdCourse.Id);
+
+                if (fullCourse == null)
+                    throw new InvalidOperationException("Failed to retrieve created course");
+
+                return _mapper.Map<CourseReadDto>(fullCourse);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Service error while creating course: {Title}", courseDto.Title);
+                throw;
+            }
+        }
     }
-} 
+}

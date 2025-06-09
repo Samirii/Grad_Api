@@ -36,44 +36,38 @@ namespace Grad_Api.Repository
             }
         }
 
-        public async Task<CourseReadDto> CreateCourseAsync(CourseCreateDto courseDto)
+        public async Task<Course> CreateCourseAsync(Course course)
         {
             try
             {
-                var category = await _context.CourseCategories
-                    .FirstOrDefaultAsync(c => c.Id == courseDto.CategoryId);
-
-                if (category == null)
-                {
-                    category = await _context.CourseCategories.FindAsync(1);
-                    if (category == null)
-                    {
-                        throw new InvalidOperationException("Default category not found");
-                    }
-                }
-
-                var course = new Course
-                {
-                    Title = courseDto.Title,
-                    Description = courseDto.Description,
-                    TeacherName = courseDto.TeacherName,
-                    CourseCategoryId = category.Id,
-                };
-
                 await _context.Courses.AddAsync(course);
                 await _context.SaveChangesAsync();
-
-                return await GetCourseAsync(course.Id) ?? 
-                    throw new InvalidOperationException("Failed to retrieve created course");
+                _logger.LogInformation("Course created successfully: {Id}", course.Id);
+                return course;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating course with title: {Title}", courseDto.Title);
+                _logger.LogError(ex, "Error creating course");
                 throw;
             }
         }
 
-    
+        public async Task<Course?> GetCourseAsync(int id)
+        {
+            try
+            {
+                return await _context.Courses
+                    .Include(c => c.Lessons)
+                    .Include(c => c.Category)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving course");
+                throw;
+            }
+        }
+
         public async Task<List<CourseReadDto>> GetAllCoursesAsync()
         {
             try
@@ -111,47 +105,7 @@ namespace Grad_Api.Repository
             }
         }
 
-   
 
-        public async Task<CourseReadDto?> GetCourseAsync(int id)
-        {
-            try
-            {
-                var course = await _context.Courses
-                    .AsNoTracking()
-                    .Include(c => c.Category)
-                    .Include(c => c.Lessons)
-                   
-                    .Where(c => c.Id == id)
-                    .Select(c => new CourseReadDto
-                    {
-                        Id = c.Id,
-                        Title = c.Title,
-                        Description = c.Description,
-                        TeacherName = c.TeacherName,
-                        CategoryName = c.Category != null ? c.Category.Name.Trim() : null,
-                        LessonCount = c.Lessons.Count,
-                        
-                        Lessons = c.Lessons.Select(l => new ReadLessonDto
-                        {
-                            Id = l.Id,
-                            Title = l.Title,
-                            Content = l.Content,
-                            VideoUrl = l.VideoUrl,
-                            CourseId = l.CourseId
-                        }).ToList()
-                    })
-                    .FirstOrDefaultAsync();
-
-                _logger.LogInformation("Course found: ID={Id}, HasLessons={(course?.Lessons?.Count > 0)}", id);
-                return course;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving course with ID: {Id}", id);
-                throw;
-            }
-        }
 
         public async Task<CourseCategory> GetCourseCategoryAsync(int courseCatId)
         {
@@ -250,38 +204,18 @@ namespace Grad_Api.Repository
         }
 
 
-        public async Task<bool> UpdateCourseAsync(int id, CourseUpdateDto course)
+        public async Task<bool> UpdateCourseAsync(int id, CourseUpdateDto updateDto)
         {
-            try
-            {
-                _logger.LogInformation("Attempting to update course with ID: {Id}", id);
+            var existingCourse = await _context.Courses.FindAsync(id);
+            if (existingCourse == null) return false;
 
-                var existingCourse = await _context.Courses.FindAsync(id);
-                if (existingCourse == null)
-                {
-                    _logger.LogWarning("Course not found for update. ID: {Id}", id);
-                    return false;
-                }
+            _mapper.Map(updateDto, existingCourse);
 
-                // Update only the allowed properties
-                existingCourse.Title = course.Title;
-                existingCourse.Description = course.Description;
-                existingCourse.TeacherName = course.TeacherName;
-                existingCourse.CourseCategoryId = course.CategoryId;
+            _context.Courses.Update(existingCourse);
+            await _context.SaveChangesAsync();
 
-                
-                await UpdateAsync(existingCourse);
-
-                _logger.LogInformation("Course updated successfully. ID: {Id}", id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating course with ID: {Id}", id);
-                throw;
-            }
+            return true;
         }
-
         public async Task<bool> DeleteCourseAsync(int id)
         {
             try
@@ -326,7 +260,10 @@ namespace Grad_Api.Repository
             }
         }
 
-      
+        public async Task<CourseCategory?> GetCategoryByIdAsync(int id)
+        {
+            return await _context.CourseCategories.FirstOrDefaultAsync(c => c.Id == id);
+        }
     }
 }
 

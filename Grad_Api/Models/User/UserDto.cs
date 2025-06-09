@@ -7,12 +7,15 @@ namespace Grad_Api.Models.User
 {
     public class UserDto : LoginUserDto
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Email is required")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    ErrorMessage = "Invalid email format. Example: example@domain.com")]
         public string Email { get; set; }
 
         [Required]
         [StringLength(100, MinimumLength = 6)]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$",
+     ErrorMessage = "Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.")]
         public string Password { get; set; }
 
         [Required]

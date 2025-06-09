@@ -134,6 +134,7 @@ namespace Grad_Api.Repository
                     .Include(e => e.Course)
                     .Include(e => e.Student)
                     
+                    
                     .Select(e => new EnrollmentReadDto
                     {
                         Id = e.Id,
