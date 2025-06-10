@@ -7,8 +7,9 @@ namespace Grad_Api.Repository.Performance
     public interface IPerformanceRepository
     {
         Task<List<QuizScore>> GetQuizScoresForStudentInCourseAsync(string studentId, int courseId);
-        Task<Course?> GetCourseByIdAsync(int courseId); 
-       
+        Task<Course?> GetCourseByIdAsync(int courseId);
+        Task<IEnumerable<Course>> GetEnrolledCoursesAsync(string studentId);
+
 
     }
 

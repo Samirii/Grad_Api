@@ -19,6 +19,17 @@ namespace Grad_Api.Repository.Performance
             return await _context.Courses.FindAsync(courseId);
         }
 
+        public async Task<IEnumerable<Course>> GetEnrolledCoursesAsync(string studentId)
+        {
+                    return await _context.Enrollments
+              .Where(e => e.StudentId == studentId)
+              .Include(e => e.Course)
+              .Select(e => e.Course)
+              .ToListAsync();
+
+
+        }
+
         public async Task<List<QuizScore>> GetQuizScoresForStudentInCourseAsync(string studentId, int courseId)
         {
             return await _context.QuizScores

@@ -1,7 +1,7 @@
-﻿namespace Grad_Api.Models.PythonAi
+﻿using Grad_Api.Models.PythonAi;
+using System.Text.Json.Serialization;
+
+public class PredictionResponse
 {
-    public class PredictionResponse
-    {
-        public double PredictedPerformance { get; set; }
-    }
+    public double PredictedPerformance { get; set; }
 }

@@ -12,5 +12,7 @@ namespace Grad_Api.Repository
         Task<List<EnrollmentReadDto>> GetStudentEnrollments(string studentId);    
         Task<EnrollmentReadDto> CreateEnrollment(EnrollmentCreateDto enrollmentCreateDto);
         Task<bool> DeleteEnrollment(int id);
+
+        Task<IEnumerable<Course>> GetEnrolledCoursesAsync(string studentId);
     }
 }

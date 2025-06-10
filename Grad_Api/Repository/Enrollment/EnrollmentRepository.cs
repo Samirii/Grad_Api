@@ -185,8 +185,14 @@ namespace Grad_Api.Repository
                 throw new Exception($"Error getting enrollment: {ex.Message}");
             }
         }
-
-       
+        public async Task<IEnumerable<Course>> GetEnrolledCoursesAsync(string studentId)
+        {
+            return await _context.Enrollments
+                .Where(e => e.StudentId == studentId)
+                .Select(e => e.Course)
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }
 

@@ -133,5 +133,10 @@ namespace Grad_Api.Services.Enrollment
                 };
             }
         }
+
+        public async Task<IEnumerable<Course>> GetEnrolledCoursesAsync(string studentId)
+        {
+            return await _enrollmentRepository.GetEnrolledCoursesAsync(studentId);
+        }
     }
 }

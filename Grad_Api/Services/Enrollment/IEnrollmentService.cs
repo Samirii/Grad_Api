@@ -1,4 +1,5 @@
-﻿using Grad_Api.Models.Course;
+﻿using Grad_Api.Data;
+using Grad_Api.Models.Course;
 using Grad_Api.Models.Enrollment;
 
 namespace Grad_Api.Services.Enrollment
@@ -11,6 +12,8 @@ namespace Grad_Api.Services.Enrollment
         Task<List<EnrollmentReadDto>> GetStudentEnrollments(string studentId);
 
         Task<bool> DeleteEnrollment(int id);
+        Task<IEnumerable<Course>> GetEnrolledCoursesAsync(string studentId);
+
 
     }
 }

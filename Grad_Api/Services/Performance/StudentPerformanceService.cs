@@ -13,13 +13,16 @@ namespace Grad_Api.Services.Performance
         private readonly ILogger<StudentPerformanceService> _logger;
 
         private readonly IPerformanceRepository _repo;
+        private readonly IEnrollmentRepoaitory _enrollmentRepoaitory;
 
 
-        public StudentPerformanceService(IPerformanceRepository repo, HttpClient httpClient, ILogger<StudentPerformanceService> logger)
+
+        public StudentPerformanceService(IPerformanceRepository repo, HttpClient httpClient, ILogger<StudentPerformanceService> logger , IEnrollmentRepoaitory enrollmentRepoaitory)
         {
             _repo = repo;
             _httpClient = httpClient;
             _logger = logger;
+            _enrollmentRepoaitory = enrollmentRepoaitory;
         }
 
         public async Task<object?> GetPredictedPerformanceAsync(string studentId, int courseId)
@@ -49,7 +52,7 @@ namespace Grad_Api.Services.Performance
                 AvgPreviousScore = averageScore,
                 NumQuizzesTaken = numQuizzes,
                 LastScore = lastQuizScore,
-               
+
 
             };
             var json = JsonSerializer.Serialize(input);
@@ -75,7 +78,7 @@ namespace Grad_Api.Services.Performance
                     CourseName = course?.Title,
                     PredictedPerformance = prediction?.PredictedPerformance,
                     Details = input
-                    
+
                 };
             }
             catch (Exception ex)
@@ -85,7 +88,68 @@ namespace Grad_Api.Services.Performance
             }
 
         }
+
+        
+
+      
+        public async Task<object?> GetAllCoursesPerformanceAsync(string studentId)
+        {
+            // Fetch all courses the student is enrolled in
+            var enrolledCourses = await _enrollmentRepoaitory.GetEnrolledCoursesAsync(studentId);
+
+            if (!enrolledCourses.Any())
+            {
+                _logger.LogWarning("No courses found for student {StudentId}", studentId);
+                return null;
+            }
+
+            // List to store performance results for each course
+            var performances = new List<object>();
+
+            // Iterate through each course and get predicted performance
+            foreach (var course in enrolledCourses)
+            {
+                try
+                {
+                    var performance = await GetPredictedPerformanceAsync(studentId, course.Id);
+                    if (performance != null)
+                    {
+                        performances.Add(performance);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("No performance data available for student {StudentId} in course {CourseId}", studentId, course.Id);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error retrieving performance for student {StudentId} in course {CourseId}", studentId, course.Id);
+                    // Optionally, continue to the next course instead of throwing
+                    performances.Add(new
+                    {
+                        CourseName = course.Title,
+                        PredictedPerformance = (double?)null,
+                        Details = (object?)null,
+                        Error = $"Failed to retrieve performance: {ex.Message}"
+                    });
+                }
+            }
+
+            if (!performances.Any())
+            {
+                _logger.LogWarning("No performance data available for student {StudentId}", studentId);
+                return null;
+            }
+
+            return new
+            {
+                StudentId = studentId,
+                CoursePerformances = performances
+            };
+        }
     }
+
+
 }
 
 

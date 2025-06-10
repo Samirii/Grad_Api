@@ -14,6 +14,7 @@ namespace Grad_Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [AllowAnonymous]
     public class LessonController : ControllerBase
     {
         private readonly ILessonService _lessonService;

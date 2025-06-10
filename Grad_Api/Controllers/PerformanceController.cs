@@ -1,7 +1,10 @@
 ﻿using Grad_Api.Models.PythonAi;
+using Grad_Api.Repository;
 using Grad_Api.Services.Performance;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -12,10 +15,13 @@ namespace Grad_Api.Controllers
     public class PerformanceController : ControllerBase
     {
         private readonly StudentPerformanceService _studentPerformanceService;
+        
 
-        public PerformanceController(StudentPerformanceService studentPerformanceService)
+
+        public PerformanceController(StudentPerformanceService studentPerformanceService )
         {
             _studentPerformanceService = studentPerformanceService;
+          
         }
         //[HttpPost("predict")]
         //public async Task<ActionResult<PredictionResponse>> PredictPerformance([FromBody] PredictionRequest request)
@@ -55,5 +61,14 @@ namespace Grad_Api.Controllers
 
             return Ok(result);
         }
+        [HttpGet("students/{studentId}/performances")]
+        public async Task<ActionResult<object?>> GetAllPerformances(string studentId)
+        {
+            var result = await _studentPerformanceService.GetAllCoursesPerformanceAsync(studentId);
+            if (result == null)
+                return NotFound("No performance data available for the student.");
+            return Ok(result);
+        }
+
     }
 }
