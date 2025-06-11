@@ -12,147 +12,20 @@ namespace Grad_Api.Controllers
     [ApiController]
     [AllowAnonymous]
 
-
-
     public class QuizController : ControllerBase
     {
         private readonly IQuizService _quizService;
+        private readonly IWebHostEnvironment _environment;
 
-        public QuizController(IQuizService quizService)
+        public QuizController(IQuizService quizService , IWebHostEnvironment environment)
         {
             _quizService = quizService;
+            _environment = environment;
         }
 
-        [HttpPost("import")]
-        [Consumes("multipart/form-data")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ImportQuestions([FromForm] FileUploadRequest request)
-        {
-            try
-            {
-                if (request.File == null || request.File.Length == 0)
-                {
-                    return BadRequest("No file uploaded.");
-                }
 
-                // Validate the file extension
-                var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
-                if (!new[] { ".xlsx", ".xlsm", ".xltx", ".xltm" }.Contains(fileExtension))
-                {
-                    return BadRequest("Invalid file format. Only .xlsx, .xlsm, .xltx, and .xltm files are allowed.");
-                }
-
-                // Create a temporary file with the correct extension
-                var tempDirectory = Path.GetTempPath();
-                var fileName = $"{Guid.NewGuid()}{fileExtension}";
-                var filePath = Path.Combine(tempDirectory, fileName);
-
-                try
-                {
-                    // Save the uploaded file
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await request.File.CopyToAsync(stream);
-                    }
-
-                    // Process the file
-                    await _quizService.ImportQuestionsFromExcelAsync(filePath);
-                    return Ok("Questions imported successfully.");
-                }
-                finally
-                {
-                    // Clean up
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-    
-
-        [HttpGet("lesson/{lessonId}")]
-        public async Task<IActionResult> GetQuizByLessonId(int lessonId)
-        {
-            try
-            {
-                var quiz = await _quizService.GetQuizWithQuestionsByLessonIdAsync(lessonId);
-                if (quiz == null)
-                {
-                    return NotFound($"No quiz found for LessonId {lessonId}");
-                }
-                return Ok(quiz);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An error occurred while retrieving the quiz.");
-            }
-        }
-
-        [HttpGet("{quizId}/random-questions")]
-        public async Task<IActionResult> GetRandomQuestionsForQuiz(int quizId, [FromQuery] int count = 20)
-        {
-            try
-            {
-                // Validate the count
-                if (count <= 0 || count > 100) // Limit to a maximum of 100 questions
-                {
-                    return BadRequest("Invalid count value. Count must be between 1 and 100.");
-                }
-
-                // Fetch random questions
-                var randomQuestions = await _quizService.GetRandomQuestionsForQuizAsync(quizId, count);
-
-                // Return the questions
-                return Ok(randomQuestions);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-        //[HttpPost("submit-answers")]
-        //public async Task<IActionResult> SubmitAnswers([FromBody] SubmitAnswersDto submitAnswersDto, [FromQuery] string studentId)
-        //{
-        //    try
-        //    {
-        //        // Validate the input
-        //        if (submitAnswersDto == null || submitAnswersDto.Answers == null || !submitAnswersDto.Answers.Any())
-        //        {
-        //            return BadRequest("Invalid input. Please provide valid answers.");
-        //        }
-
-        //        // Calculate and save the score
-        //        var scoreResponse = await _quizService.CalculateAndSaveScoreAsync(studentId, submitAnswersDto);
-
-        //        // Return the score
-        //        return Ok(scoreResponse);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Internal server error: {ex.Message}");
-        //    }
-        //}
-        [HttpGet("scores/{studentId}")]
-        public async Task<IActionResult> GetQuizScoresForStudent(string studentId)
-        {
-            try
-            {
-                var quizScores = await _quizService.GetQuizScoresForStudentAsync(studentId);
-                return Ok(quizScores);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
+      
+       
         [HttpPost("score")]
         public async Task<IActionResult> PostScore([FromBody] QuizScoreDto scoreDto)
         {
@@ -182,16 +55,7 @@ namespace Grad_Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        [HttpGet("from-csv")]
-        public IActionResult GetQuestionsFromCsv()
-        {
-            string csvFilePath = "path/to/final_Merged_Questions_Consolidated.csv";
-
-            var questionService = new QuestionService();
-            var questions = questionService.ReadQuestionsFromCsv(csvFilePath);
-
-            return Ok(questions);
-        }
+      
         [HttpGet("questions")]
         public IActionResult GetQuestionsByFilters(
     [FromQuery] string subjectName,
@@ -250,6 +114,31 @@ namespace Grad_Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpPost("add-question-to-csv")]
+        public async Task<IActionResult> AddQuestionToCsv([FromBody] AddQuestionDto question)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Desired relative or absolute path to CSV file
+            string relativeCsvPath = Path.Combine("path", "to", "final_Merged_Questions_Consolidated.csv");
+            string csvFilePath = Path.Combine(Directory.GetCurrentDirectory(), relativeCsvPath);
+
+            bool result = await _quizService.AddQuestionToExcelAsync(question, csvFilePath);
+
+            if (result)
+            {
+                return Ok(new { message = "Question added to CSV successfully.", filePath = csvFilePath });
+            }
+
+            return StatusCode(500, "Failed to add question to CSV.");
+        }
+
+
+
         [HttpGet("all")]
        public async Task<IActionResult> GetAllQuizzesScore()
         {
@@ -257,5 +146,161 @@ namespace Grad_Api.Controllers
             return Ok(scores);
 
         }
+
+        [HttpPost("predict")]
+        public async Task<IActionResult> Predict([FromBody] QuestionDefecultDto question)
+        {
+            var difficulty = await _quizService.PredictDifficultyAsync(question);
+            return Ok(new { difficulty });
+        }
+
+        //[HttpPost("import")]
+        //[Consumes("multipart/form-data")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        //public async Task<IActionResult> ImportQuestions([FromForm] FileUploadRequest request)
+        //{
+        //    try
+        //    {
+        //        if (request.File == null || request.File.Length == 0)
+        //        {
+        //            return BadRequest("No file uploaded.");
+        //        }
+
+        //        // Validate the file extension
+        //        var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
+        //        if (!new[] { ".xlsx", ".xlsm", ".xltx", ".xltm" }.Contains(fileExtension))
+        //        {
+        //            return BadRequest("Invalid file format. Only .xlsx, .xlsm, .xltx, and .xltm files are allowed.");
+        //        }
+
+        //        // Create a temporary file with the correct extension
+        //        var tempDirectory = Path.GetTempPath();
+        //        var fileName = $"{Guid.NewGuid()}{fileExtension}";
+        //        var filePath = Path.Combine(tempDirectory, fileName);
+
+        //        try
+        //        {
+        //            // Save the uploaded file
+        //            using (var stream = new FileStream(filePath, FileMode.Create))
+        //            {
+        //                await request.File.CopyToAsync(stream);
+        //            }
+
+        //            // Process the file
+        //            await _quizService.ImportQuestionsFromExcelAsync(filePath);
+        //            return Ok("Questions imported successfully.");
+        //        }
+        //        finally
+        //        {
+        //            // Clean up
+        //            if (System.IO.File.Exists(filePath))
+        //            {
+        //                System.IO.File.Delete(filePath);
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Internal server error: {ex.Message}");
+        //    }
+        //}
+
+
+        //[HttpGet("scores/{studentId}")]
+        //public async Task<IActionResult> GetQuizScoresForStudent(string studentId)
+        //{
+        //    try
+        //    {
+        //        var quizScores = await _quizService.GetQuizScoresForStudentAsync(studentId);
+        //        return Ok(quizScores);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Internal server error: {ex.Message}");
+        //    }
+        //}
+
+
+        //[HttpGet("lesson/{lessonId}")]
+        //public async Task<IActionResult> GetQuizByLessonId(int lessonId)
+        //{
+        //    try
+        //    {
+        //        var quiz = await _quizService.GetQuizWithQuestionsByLessonIdAsync(lessonId);
+        //        if (quiz == null)
+        //        {
+        //            return NotFound($"No quiz found for LessonId {lessonId}");
+        //        }
+        //        return Ok(quiz);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, "An error occurred while retrieving the quiz.");
+        //    }
+        //}
+
+
+
+
+        //[HttpGet("{quizId}/random-questions")]
+        //public async Task<IActionResult> GetRandomQuestionsForQuiz(int quizId, [FromQuery] int count = 20)
+        //{
+        //    try
+        //    {
+        //        // Validate the count
+        //        if (count <= 0 || count > 100) // Limit to a maximum of 100 questions
+        //        {
+        //            return BadRequest("Invalid count value. Count must be between 1 and 100.");
+        //        }
+
+        //        // Fetch random questions
+        //        var randomQuestions = await _quizService.GetRandomQuestionsForQuizAsync(quizId, count);
+
+        //        // Return the questions
+        //        return Ok(randomQuestions);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Internal server error: {ex.Message}");
+        //    }
+        //}
+
+
+        //[HttpPost("submit-answers")]
+        //public async Task<IActionResult> SubmitAnswers([FromBody] SubmitAnswersDto submitAnswersDto, [FromQuery] string studentId)
+        //{
+        //    try
+        //    {
+        //        // Validate the input
+        //        if (submitAnswersDto == null || submitAnswersDto.Answers == null || !submitAnswersDto.Answers.Any())
+        //        {
+        //            return BadRequest("Invalid input. Please provide valid answers.");
+        //        }
+
+        //        // Calculate and save the score
+        //        var scoreResponse = await _quizService.CalculateAndSaveScoreAsync(studentId, submitAnswersDto);
+
+        //        // Return the score
+        //        return Ok(scoreResponse);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Internal server error: {ex.Message}");
+        //    }
+        //}
+
+
+        //[HttpGet("from-csv")]
+        //public IActionResult GetQuestionsFromCsv()
+        //{
+        //    string csvFilePath = "path/to/final_Merged_Questions_Consolidated.csv";
+
+        //    var questionService = new QuestionService();
+        //    var questions = questionService.ReadQuestionsFromCsv(csvFilePath);
+
+        //    return Ok(questions);
+        //}
     }
 }
